@@ -1,14 +1,10 @@
-import React, {
-  useState,
-  useEffect,
-  useMemo,
-  useCallback,
-  useRef,
-} from "react";
+import React, { useState, useRef } from "react";
 
 // ============================================================================
 // CONSTANTS
 // ============================================================================
+
+const API_URL = import.meta.env.VITE_API_URL ?? "http://localhost:3000";
 
 const SCAM_TYPES = [
   {
@@ -76,45 +72,35 @@ const AMOUNT_RANGES = [
   { id: "gt_1000", label: "> 1.000 €" },
 ];
 
-const BADGES = [
-  { id: "first_report", name: "Prima segnalazione", icon: "🎖️", xp: 25 },
-  { id: "detective", name: "Detective", icon: "🔍", xp: 100 },
-  { id: "guardian", name: "Guardiano", icon: "🛡️", xp: 250 },
-  { id: "expert", name: "Esperto", icon: "⭐", xp: 500 },
+const REGIONS = [
+  "Abruzzo",
+  "Basilicata",
+  "Calabria",
+  "Campania",
+  "Emilia-Romagna",
+  "Friuli-Venezia Giulia",
+  "Lazio",
+  "Liguria",
+  "Lombardia",
+  "Marche",
+  "Molise",
+  "Piemonte",
+  "Puglia",
+  "Sardegna",
+  "Sicilia",
+  "Toscana",
+  "Trentino-Alto Adige",
+  "Umbria",
+  "Valle d'Aosta",
+  "Veneto",
 ];
 
-const TOTAL_STEPS = 3;
+const TOTAL_STEPS = 4;
 const MIN_MSG_LEN = 50;
-const LS_KEY = "scam_radar_v3";
 
 // ============================================================================
-// UTILITIES (pure, memoization-friendly)
+// UTILITIES
 // ============================================================================
-
-function uid() {
-  return Math.random().toString(36).slice(2, 11) + Date.now().toString(36);
-}
-
-function nowISO() {
-  return new Date().toISOString();
-}
-
-function humanDate(iso) {
-  try {
-    return new Date(iso).toLocaleString("it-IT", {
-      month: "short",
-      day: "2-digit",
-      hour: "2-digit",
-      minute: "2-digit",
-    });
-  } catch {
-    return iso;
-  }
-}
-
-function withinLastDays(iso, days) {
-  return new Date(iso).getTime() >= Date.now() - days * 86_400_000;
-}
 
 // Luhn check for credit card redaction
 function luhnCheck(digits) {
@@ -168,80 +154,19 @@ function redactSensitive(text) {
 }
 
 // ============================================================================
-// STORAGE
-// ============================================================================
-
-function loadFromStorage() {
-  try {
-    const raw = localStorage.getItem(LS_KEY);
-    return raw ? JSON.parse(raw) : null;
-  } catch {
-    return null;
-  }
-}
-
-function saveToStorage(data) {
-  try {
-    localStorage.setItem(LS_KEY, JSON.stringify(data));
-  } catch (e) {
-    console.error("Storage error:", e);
-  }
-}
-
-// ============================================================================
-// SEED DATA
-// ============================================================================
-
-function createSeedReports() {
-  const make = (minsAgo, type, ch, msg) => ({
-    id: uid(),
-    createdAt: new Date(Date.now() - minsAgo * 60_000).toISOString(),
-    scamType: type,
-    channel: ch,
-    amountRange: "na",
-    message: redactSensitive(msg),
-    consentPublic: true,
-  });
-  return [
-    make(
-      2880,
-      "impersonation_bank",
-      "whatsapp",
-      "Gentile cliente, per una transazione sospetta acceda subito: https://banca-sicura.example/verify",
-    ),
-    make(
-      1440,
-      "phishing_smishing",
-      "sms",
-      "Il tuo pacco è in giacenza. Clicca qui per aggiornare: https://corriere.example/track",
-    ),
-    make(
-      180,
-      "fake_investment",
-      "telegram",
-      "Investimento garantito crypto! Rendimento 300% in 30 giorni. Contattami ora!",
-    ),
-  ];
-}
-
-// ============================================================================
 // UI PRIMITIVES
 // ============================================================================
 
-function Chip({ children, active, onClick, className = "" }) {
+function Chip({ children, active, onClick }) {
   return (
     <button
       type="button"
       onClick={onClick}
-      className={`
-        inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold
-        border-2 transition-all duration-150 select-none
-        ${
-          active
-            ? "border-teal-500 bg-teal-50 text-teal-700"
-            : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
-        } ${className}
-      `}
+      className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold border-2 transition-all duration-150 select-none ${
+        active
+          ? "border-teal-500 bg-teal-50 text-teal-700"
+          : "border-slate-200 bg-white text-slate-600 hover:border-slate-300"
+      }`}
     >
       {children}
     </button>
@@ -253,15 +178,11 @@ function SelectCard({ icon, label, sublabel, active, onClick }) {
     <button
       type="button"
       onClick={onClick}
-      className={`
-        flex flex-col items-center gap-1 p-3 rounded-2xl border-2 text-center
-        transition-all duration-150 w-full
-        ${
-          active
-            ? "border-teal-500 bg-teal-50 shadow-sm shadow-teal-100"
-            : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
-        }
-      `}
+      className={`flex flex-col items-center gap-1 p-3 rounded-2xl border-2 text-center transition-all duration-150 w-full ${
+        active
+          ? "border-teal-500 bg-teal-50 shadow-sm shadow-teal-100"
+          : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+      }`}
     >
       <span className="text-2xl leading-none">{icon}</span>
       <span
@@ -278,130 +199,63 @@ function SelectCard({ icon, label, sublabel, active, onClick }) {
   );
 }
 
-function ProgressDots({ current, total }) {
+function ProgressBar({ current, total }) {
   return (
     <div className="flex items-center gap-2 mb-6">
-      {Array.from({ length: total }, (_, i) => (
-        <React.Fragment key={i}>
-          <div
-            className={`
-              h-1.5 rounded-full transition-all duration-300
-              ${i < current ? "bg-teal-500" : i === current - 1 ? "bg-teal-500 flex-1" : "bg-slate-200"}
-              ${i === current - 1 ? "flex-3" : "flex-1"}
-            `}
-          />
-        </React.Fragment>
-      ))}
-      <span className="text-xs text-slate-400 font-medium whitespace-nowrap ml-1">
+      <div className="flex-1 h-1.5 bg-slate-200 rounded-full overflow-hidden">
+        <div
+          className="h-full bg-teal-500 rounded-full transition-all duration-300"
+          style={{ width: `${(current / total) * 100}%` }}
+        />
+      </div>
+      <span className="text-xs text-slate-400 font-medium whitespace-nowrap">
         {current}/{total}
       </span>
     </div>
   );
 }
 
-// ============================================================================
-// REPORT WIZARD
-// ============================================================================
-
-const DEFAULT_FORM = {
-  message: "",
-  scamType: "phishing_smishing",
-  channel: "sms",
-  amountRange: "na",
-  consent: true,
-};
-
-function ReportWizard({ onSubmit }) {
-  const [step, setStep] = useState(1);
-  const [form, setForm] = useState(DEFAULT_FORM);
-
-  const set = useCallback(
-    (key) => (val) => setForm((prev) => ({ ...prev, [key]: val })),
-    [],
-  );
-
-  const redacted = useMemo(() => redactSensitive(form.message), [form.message]);
-
-  const handleSubmit = useCallback(() => {
-    onSubmit({
-      id: uid(),
-      createdAt: nowISO(),
-      scamType: form.scamType,
-      channel: form.channel,
-      amountRange: form.amountRange,
-      message: redacted,
-      consentPublic: form.consent,
-    });
-    setForm(DEFAULT_FORM);
-    setStep(1);
-  }, [form, redacted, onSubmit]);
-
+function NavButtons({
+  onBack,
+  onNext,
+  nextLabel = "Continua →",
+  nextDisabled = false,
+  loading = false,
+}) {
   return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b border-slate-100">
-        <div className="flex items-center gap-3 mb-4">
-          <span className="text-2xl">📝</span>
-          <div>
-            <h3 className="text-lg font-bold text-slate-900">
-              Segnala una truffa
-            </h3>
-            <p className="text-sm text-slate-500">
-              In 3 step aiuti la community
-            </p>
-          </div>
-        </div>
-        <ProgressDots current={step} total={TOTAL_STEPS} />
-      </div>
-
-      <div className="p-6">
-        {step === 1 && (
-          <StepMessage
-            value={form.message}
-            onChange={set("message")}
-            redacted={redacted}
-            onNext={() => setStep(2)}
-          />
-        )}
-        {step === 2 && (
-          <StepClassify
-            scamType={form.scamType}
-            setScamType={set("scamType")}
-            channel={form.channel}
-            setChannel={set("channel")}
-            onBack={() => setStep(1)}
-            onNext={() => setStep(3)}
-          />
-        )}
-        {step === 3 && (
-          <StepConfirm
-            redacted={redacted}
-            amountRange={form.amountRange}
-            setAmountRange={set("amountRange")}
-            consent={form.consent}
-            setConsent={set("consent")}
-            onBack={() => setStep(2)}
-            onSubmit={handleSubmit}
-          />
-        )}
-      </div>
+    <div className="flex gap-3 mt-6">
+      {onBack && (
+        <button
+          type="button"
+          onClick={onBack}
+          className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 border-slate-200 text-slate-600 hover:border-slate-300 transition-all"
+        >
+          ← Indietro
+        </button>
+      )}
+      <button
+        type="button"
+        onClick={onNext}
+        disabled={nextDisabled || loading}
+        className="flex-2 py-3 rounded-xl font-semibold text-sm bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
+      >
+        {loading ? "Invio..." : nextLabel}
+      </button>
     </div>
   );
 }
 
-// ── Step 1 ──────────────────────────────────────────────────────────────────
+// ============================================================================
+// STEPS
+// ============================================================================
 
+// Step 1 — Messaggio
 function StepMessage({ value, onChange, redacted, onNext }) {
   const textareaRef = useRef(null);
   const ready = value.length >= MIN_MSG_LEN;
 
-  useEffect(() => {
-    textareaRef.current?.focus({ preventScroll: true });
-  }, []);
-
   return (
     <div className="space-y-4">
-      {/* Privacy note */}
       <div className="flex items-start gap-3 p-3 bg-teal-50 border border-teal-200 rounded-xl">
         <span className="text-lg mt-0.5">🔒</span>
         <div className="text-xs text-teal-800">
@@ -422,9 +276,9 @@ function StepMessage({ value, onChange, redacted, onNext }) {
           ref={textareaRef}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          placeholder='Es. "Salve, sono della sua banca. La sua carta è stata bloccata per attività sospetta, clicchi qui per sbloccarla..."'
+          placeholder='Es. "Salve, sono della sua banca. La sua carta è stata bloccata..."'
           rows={5}
-          className="w-full px-4 py-3 text-sm border-2 border-slate-200 rounded-xl focus:border-teal-400 focus:outline-none resize-none transition-colors placeholder:text-slate-400"
+          className="w-full px-4 py-3 text-sm text-black border-2 border-slate-200 rounded-xl focus:border-teal-400 focus:outline-none resize-none transition-colors placeholder:text-slate-400"
         />
         <div className="flex items-center justify-between mt-1.5">
           <span className="text-xs text-slate-400">
@@ -438,7 +292,6 @@ function StepMessage({ value, onChange, redacted, onNext }) {
         </div>
       </div>
 
-      {/* Redaction preview */}
       {ready && redacted !== value && (
         <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
           <div className="text-xs font-semibold text-slate-500 mb-1.5">
@@ -450,20 +303,12 @@ function StepMessage({ value, onChange, redacted, onNext }) {
         </div>
       )}
 
-      <button
-        type="button"
-        onClick={onNext}
-        disabled={!ready}
-        className="w-full py-3 rounded-xl font-semibold text-sm bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-40 disabled:cursor-not-allowed transition-all"
-      >
-        Continua →
-      </button>
+      <NavButtons onNext={onNext} nextDisabled={!ready} />
     </div>
   );
 }
 
-// ── Step 2 ──────────────────────────────────────────────────────────────────
-
+// Step 2 — Classificazione
 function StepClassify({
   scamType,
   setScamType,
@@ -510,50 +355,74 @@ function StepClassify({
         </div>
       </div>
 
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 border-slate-200 text-slate-600 hover:border-slate-300 transition-all"
-        >
-          ← Indietro
-        </button>
-        <button
-          type="button"
-          onClick={onNext}
-          className="flex-2 py-3 rounded-xl font-semibold text-sm bg-teal-600 text-white hover:bg-teal-700 transition-all"
-        >
-          Continua →
-        </button>
-      </div>
+      <NavButtons onBack={onBack} onNext={onNext} />
     </div>
   );
 }
 
-// ── Step 3 ──────────────────────────────────────────────────────────────────
-
-function StepConfirm({
-  redacted,
+// Step 3 — Dati opzionali (età, regione, importo)
+function StepOptional({
+  age,
+  setAge,
+  location,
+  setLocation,
   amountRange,
   setAmountRange,
-  consent,
-  setConsent,
   onBack,
-  onSubmit,
+  onNext,
 }) {
   return (
-    <div className="space-y-4">
+    <div className="space-y-6">
+      <p className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-3">
+        Tutti i campi sono facoltativi. Ci aiutano a capire meglio il fenomeno.
+      </p>
+
+      {/* Età */}
+      <div>
+        <label className="block text-sm font-semibold text-slate-800 mb-2">
+          Età
+        </label>
+        <input
+          type="number"
+          min={18}
+          max={100}
+          value={age}
+          onChange={(e) => setAge(e.target.value)}
+          placeholder="Es. 34"
+          className="w-32 px-4 py-2 text-sm text-black border-2 border-slate-200 rounded-xl focus:border-teal-400 focus:outline-none transition-colors"
+        />
+      </div>
+
+      {/* Regione */}
+      <div>
+        <label className="block text-sm font-semibold text-slate-800 mb-2">
+          Regione
+        </label>
+        <select
+          value={location}
+          onChange={(e) => setLocation(e.target.value)}
+          className="w-full px-4 py-2 text-sm text-black border-2 border-slate-200 rounded-xl focus:border-teal-400 focus:outline-none transition-colors bg-white"
+        >
+          <option value="">Seleziona regione...</option>
+          {REGIONS.map((r) => (
+            <option key={r} value={r}>
+              {r}
+            </option>
+          ))}
+        </select>
+      </div>
+
+      {/* Importo */}
       <div>
         <h4 className="text-sm font-semibold text-slate-800 mb-3">
-          Importo coinvolto (opzionale)
+          Importo coinvolto
         </h4>
-        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+        <div className="flex flex-wrap gap-2">
           {AMOUNT_RANGES.map((a) => (
             <Chip
               key={a.id}
               active={amountRange === a.id}
               onClick={() => setAmountRange(a.id)}
-              className="justify-center text-center"
             >
               {a.label}
             </Chip>
@@ -561,7 +430,23 @@ function StepConfirm({
         </div>
       </div>
 
-      {/* Final preview */}
+      <NavButtons onBack={onBack} onNext={onNext} />
+    </div>
+  );
+}
+
+// Step 4 — Conferma e invio
+function StepConfirm({
+  redacted,
+  consent,
+  setConsent,
+  onBack,
+  onSubmit,
+  loading,
+  error,
+}) {
+  return (
+    <div className="space-y-4">
       <div className="p-3 bg-slate-50 border border-slate-200 rounded-xl">
         <div className="text-xs font-semibold text-slate-500 mb-1.5">
           Testo che verrà salvato (redatto):
@@ -571,7 +456,6 @@ function StepConfirm({
         </div>
       </div>
 
-      {/* Consent */}
       <label className="flex items-start gap-3 p-4 border-2 border-slate-200 rounded-xl cursor-pointer hover:border-teal-200 hover:bg-teal-50/40 transition-all">
         <input
           type="checkbox"
@@ -589,37 +473,30 @@ function StepConfirm({
         </span>
       </label>
 
-      <div className="flex gap-3">
-        <button
-          type="button"
-          onClick={onBack}
-          className="flex-1 py-3 rounded-xl font-semibold text-sm border-2 border-slate-200 text-slate-600 hover:border-slate-300 transition-all"
-        >
-          ← Indietro
-        </button>
-        <button
-          type="button"
-          onClick={onSubmit}
-          className="flex-2 py-3 rounded-xl font-semibold text-sm bg-teal-600 text-white hover:bg-teal-700 transition-all shadow-sm hover:shadow-md"
-        >
-          ✓ Invia segnalazione
-        </button>
-      </div>
+      {error && (
+        <div className="p-3 bg-red-50 border border-red-200 rounded-xl text-xs text-red-700">
+          ⚠️ {error}
+        </div>
+      )}
+
+      <NavButtons
+        onBack={onBack}
+        onNext={onSubmit}
+        nextLabel="✓ Invia segnalazione"
+        loading={loading}
+      />
     </div>
   );
 }
 
 // ============================================================================
-// SUCCESS STATE
+// SUCCESS
 // ============================================================================
 
-function SuccessBanner({ report, user, onReset, onViewTrends }) {
-  const type = SCAM_TYPES.find((t) => t.id === report.scamType);
-  const ch = CHANNELS.find((c) => c.id === report.channel);
-
+function SuccessBanner({ onReset }) {
   return (
     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-8 text-center">
-      <div className="w-16 h-16 bg-teal-50 border-2 border-teal-200 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl">
+      <div className="w-16 h-16 bg-teal-50 border-2 border-teal-200 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl text-black">
         ✓
       </div>
       <h3 className="text-xl font-bold text-slate-900 mb-1">
@@ -628,218 +505,143 @@ function SuccessBanner({ report, user, onReset, onViewTrends }) {
       <p className="text-slate-500 text-sm mb-6">
         Grazie per proteggere la community.
       </p>
-
-      {/* Tags */}
-      <div className="flex flex-wrap gap-2 justify-center mb-6">
-        <Chip active>
-          {type?.icon} {type?.label}
-        </Chip>
-        <Chip active>
-          {ch?.icon} {ch?.label}
-        </Chip>
-      </div>
-
-      {/* XP gained */}
-      <div className="flex items-center justify-center gap-2 mb-6 p-3 bg-amber-50 border border-amber-200 rounded-xl">
-        <span className="text-amber-600 font-bold text-sm">+25 XP</span>
-        <span className="text-amber-500 text-xs">
-          · Livello {user.level} — {user.xp}/{user.xpToNext} XP
-        </span>
-      </div>
-
-      {/* Mini XP bar */}
-      <div className="h-1.5 bg-slate-200 rounded-full overflow-hidden mb-6">
-        <div
-          className="h-full bg-teal-500 transition-all duration-700"
-          style={{ width: `${(user.xp / user.xpToNext) * 100}%` }}
-        />
-      </div>
-
-      <div className="flex gap-3">
-        <button
-          onClick={onViewTrends}
-          className="flex-1 py-2.5 rounded-xl text-sm font-semibold border-2 border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700 transition-all"
-        >
-          Vedi trend →
-        </button>
-        <button
-          onClick={onReset}
-          className="flex-1 py-2.5 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all"
-        >
-          Nuova segnalazione
-        </button>
-      </div>
-    </div>
-  );
-}
-
-// ============================================================================
-// TRENDS DASHBOARD
-// ============================================================================
-
-function TrendsDashboard({ reports }) {
-  const last7 = useMemo(
-    () => reports.filter((r) => withinLastDays(r.createdAt, 7)),
-    [reports],
-  );
-
-  const topType = useMemo(() => {
-    const map = new Map();
-    last7.forEach((r) => map.set(r.scamType, (map.get(r.scamType) || 0) + 1));
-    const [id, count] = [...map.entries()].sort((a, b) => b[1] - a[1])[0] || [];
-    return id ? { ...SCAM_TYPES.find((t) => t.id === id), count } : null;
-  }, [last7]);
-
-  const topChannel = useMemo(() => {
-    const map = new Map();
-    last7.forEach((r) => map.set(r.channel, (map.get(r.channel) || 0) + 1));
-    const [id, count] = [...map.entries()].sort((a, b) => b[1] - a[1])[0] || [];
-    return id ? { ...CHANNELS.find((c) => c.id === id), count } : null;
-  }, [last7]);
-
-  return (
-    <div className="space-y-4">
-      {/* User card */}
-      {/* <UserCard user={user} /> */}
-
-      {/* KPI row */}
-      <div className="grid grid-cols-3 gap-3">
-        <StatCard label="Ultimi 7 gg" value={last7.length} icon="📊" />
-        <StatCard
-          label="Top schema"
-          value={topType?.icon ?? "—"}
-          sub={topType?.label}
-          icon={null}
-          raw
-        />
-        <StatCard
-          label="Top canale"
-          value={topChannel?.icon ?? "—"}
-          sub={topChannel?.label}
-          icon={null}
-          raw
-        />
-      </div>
-
-      {/* Recent */}
-      <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
-        <div className="px-5 py-4 border-b border-slate-100">
-          <h3 className="font-bold text-slate-800 text-sm">
-            Ultime segnalazioni
-          </h3>
-        </div>
-        <div className="divide-y divide-slate-100">
-          {reports.slice(0, 5).map((r) => (
-            <ReportRow key={r.id} report={r} />
-          ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-function StatCard({ label, value, sub, raw = false }) {
-  return (
-    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-4 text-center">
-      <div
-        className={`font-bold text-slate-900 mb-0.5 ${raw ? "text-3xl" : "text-3xl text-teal-600"}`}
+      <button
+        onClick={onReset}
+        className="px-6 py-2.5 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all"
       >
-        {value}
-      </div>
-      {sub && <div className="text-xs text-slate-500 font-medium">{sub}</div>}
-      <div className="text-xs text-slate-400 mt-1">{label}</div>
-    </div>
-  );
-}
-
-function ReportRow({ report }) {
-  const type = SCAM_TYPES.find((t) => t.id === report.scamType);
-  const ch = CHANNELS.find((c) => c.id === report.channel);
-  return (
-    <div className="px-5 py-3 hover:bg-slate-50 transition-colors">
-      <div className="flex items-center gap-2 flex-wrap mb-1.5">
-        <Chip active={false}>
-          {type?.icon} {type?.label}
-        </Chip>
-        <Chip active={false}>
-          {ch?.icon} {ch?.label}
-        </Chip>
-        <span className="text-xs text-slate-400 ml-auto">
-          {humanDate(report.createdAt)}
-        </span>
-      </div>
-      <p className="text-xs text-slate-600 line-clamp-2 font-mono leading-relaxed">
-        {report.message}
-      </p>
+        Nuova segnalazione
+      </button>
     </div>
   );
 }
 
 // ============================================================================
-// ROOT COMPONENT
+// WIZARD
 // ============================================================================
 
-const DEFAULT_USER = {
-  level: 1,
-  xp: 0,
-  xpToNext: 100,
-  reportsCount: 0,
-  checksCount: 0,
-  badges: [],
+const DEFAULT_FORM = {
+  message: "",
+  scamType: "phishing_smishing",
+  channel: "sms",
+  age: "",
+  location: "",
+  amountRange: "na",
+  consent: true,
 };
 
-export default function Form() {
-  const [tab, setTab] = useState("report"); // "report" | "trends"
-  const [submitted, setSubmitted] = useState(null); // last submitted report
+function ReportWizard({ onSuccess }) {
+  const [step, setStep] = useState(1);
+  const [form, setForm] = useState(DEFAULT_FORM);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  const [reports, setReports] = useState(() => {
-    const s = loadFromStorage();
-    return s?.reports || createSeedReports();
-  });
+  const set = (key) => (val) => setForm((prev) => ({ ...prev, [key]: val }));
+  const redacted = redactSensitive(form.message);
 
-  const [user, setUser] = useState(() => {
-    const s = loadFromStorage();
-    return s?.user || DEFAULT_USER;
-  });
+  async function handleSubmit() {
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await fetch(`${API_URL}/api/reports`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          message: redacted,
+          scamType: form.scamType,
+          channel: form.channel,
+          amountRange: form.amountRange,
+          consentPublic: form.consent,
+          ...(form.age && { age: Number(form.age) }),
+          ...(form.location && { location: form.location }),
+        }),
+      });
 
-  // Persist on changes (skip initial mount via flag)
-  const mounted = useRef(false);
-  useEffect(() => {
-    if (!mounted.current) {
-      mounted.current = true;
-      return;
+      if (!res.ok) {
+        const data = await res.json().catch(() => ({}));
+        throw new Error(data.error ?? `Errore ${res.status}`);
+      }
+
+      setForm(DEFAULT_FORM);
+      setStep(1);
+      onSuccess();
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
     }
-    saveToStorage({ reports, user });
-  }, [reports, user]);
+  }
 
-  const handleSubmit = useCallback((report) => {
-    setReports((prev) => [report, ...prev]);
+  return (
+    <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+      {/* Header */}
+      <div className="px-6 pt-6 pb-4 border-b border-slate-100">
+        <div className="flex items-center gap-3 mb-4">
+          <span className="text-2xl">📝</span>
+          <div>
+            <h3 className="text-lg font-bold text-slate-900">
+              Segnala una truffa
+            </h3>
+            <p className="text-sm text-slate-500">
+              In {TOTAL_STEPS} step aiuti la community
+            </p>
+          </div>
+        </div>
+        <ProgressBar current={step} total={TOTAL_STEPS} />
+      </div>
 
-    setUser((prev) => {
-      const next = { ...prev };
-      next.xp += 25;
-      next.reportsCount += 1;
-      if (next.reportsCount === 1 && !next.badges.includes("first_report")) {
-        next.badges = [...next.badges, "first_report"];
-        next.xp += 25;
-      }
-      // Level up loop
-      while (next.xp >= next.xpToNext) {
-        next.xp -= next.xpToNext;
-        next.level += 1;
-        next.xpToNext = Math.floor(next.xpToNext * 1.5);
-      }
-      return next;
-    });
-
-    setSubmitted(report);
-    setTab("success");
-  }, []);
-
-  const recentCount = useMemo(
-    () => reports.filter((r) => withinLastDays(r.createdAt, 7)).length,
-    [reports],
+      <div className="p-6">
+        {step === 1 && (
+          <StepMessage
+            value={form.message}
+            onChange={set("message")}
+            redacted={redacted}
+            onNext={() => setStep(2)}
+          />
+        )}
+        {step === 2 && (
+          <StepClassify
+            scamType={form.scamType}
+            setScamType={set("scamType")}
+            channel={form.channel}
+            setChannel={set("channel")}
+            onBack={() => setStep(1)}
+            onNext={() => setStep(3)}
+          />
+        )}
+        {step === 3 && (
+          <StepOptional
+            age={form.age}
+            setAge={set("age")}
+            location={form.location}
+            setLocation={set("location")}
+            amountRange={form.amountRange}
+            setAmountRange={set("amountRange")}
+            onBack={() => setStep(2)}
+            onNext={() => setStep(4)}
+          />
+        )}
+        {step === 4 && (
+          <StepConfirm
+            redacted={redacted}
+            consent={form.consent}
+            setConsent={set("consent")}
+            onBack={() => setStep(3)}
+            onSubmit={handleSubmit}
+            loading={loading}
+            error={error}
+          />
+        )}
+      </div>
+    </div>
   );
+}
+
+// ============================================================================
+// ROOT
+// ============================================================================
+
+export default function Form() {
+  const [done, setDone] = useState(false);
 
   return (
     <section
@@ -861,42 +663,12 @@ export default function Form() {
           </p>
         </div>
 
-        {/* Tabs */}
-        {tab !== "success" && (
-          <div className="flex gap-2 mb-6 p-1 bg-white border border-slate-200 rounded-2xl">
-            <TabBtn
-              active={tab === "report"}
-              onClick={() => setTab("report")}
-              icon="📝"
-              label="Segnala"
-            />
-            <TabBtn
-              active={tab === "trends"}
-              onClick={() => setTab("trends")}
-              icon="📊"
-              label="Trend"
-              badge={recentCount}
-            />
-          </div>
-        )}
-
         {/* Content */}
-        {tab === "report" && <ReportWizard onSubmit={handleSubmit} />}
-        {tab === "success" && submitted && (
-          <SuccessBanner
-            report={submitted}
-            user={user}
-            onReset={() => {
-              setSubmitted(null);
-              setTab("report");
-            }}
-            onViewTrends={() => {
-              setSubmitted(null);
-              setTab("trends");
-            }}
-          />
+        {done ? (
+          <SuccessBanner onReset={() => setDone(false)} />
+        ) : (
+          <ReportWizard onSuccess={() => setDone(true)} />
         )}
-        {tab === "trends" && <TrendsDashboard reports={reports} user={user} />}
 
         {/* Privacy footer */}
         <div className="mt-8 p-4 bg-white rounded-2xl border border-slate-200 text-xs text-slate-500">
@@ -906,38 +678,11 @@ export default function Form() {
           <ul className="grid grid-cols-2 gap-1">
             <li>✅ Nessun dato personale</li>
             <li>✅ Redazione automatica</li>
-            <li>✅ Solo nel tuo browser</li>
+            <li>✅ Dati salvati in modo anonimo</li>
             <li>✅ Trend aggregati</li>
           </ul>
         </div>
       </div>
     </section>
-  );
-}
-
-function TabBtn({ active, onClick, icon, label, badge }) {
-  return (
-    <button
-      onClick={onClick}
-      className={`
-        flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl
-        text-sm font-semibold transition-all duration-150
-        ${
-          active
-            ? "bg-teal-600 text-white shadow-sm"
-            : "text-slate-500 hover:text-slate-700"
-        }
-      `}
-    >
-      <span>{icon}</span>
-      <span>{label}</span>
-      {badge > 0 && (
-        <span
-          className={`px-1.5 py-0.5 rounded-full text-xs font-bold ${active ? "bg-white/20 text-white" : "bg-slate-200 text-slate-600"}`}
-        >
-          {badge}
-        </span>
-      )}
-    </button>
   );
 }
