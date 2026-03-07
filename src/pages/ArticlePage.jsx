@@ -10,7 +10,8 @@ import {
   ChevronRight,
 } from "lucide-react";
 import { useParams, Link } from "react-router-dom";
-import { MOCK_ARTICLES } from "../"; // aggiusta il path
+import { MOCK_ARTICLES } from "../data/articles.js"; // aggiusta il path secondo la tua struttura
+import Badge from "../components/UI/Badge.jsx";
 
 // ─── Scroll reveal hook ───────────────────────────────────────
 function useReveal(threshold = 0.12) {
@@ -30,7 +31,7 @@ function useReveal(threshold = 0.12) {
     );
     obs.observe(el);
     return () => obs.disconnect();
-  }, []);
+  }, [threshold]);
   return [ref, visible];
 }
 
@@ -134,7 +135,7 @@ export default function ArticlePage() {
       {/* ══ HERO ══════════════════════════════════════════════ */}
       <section className="relative overflow-hidden pt-28 pb-16">
         {/* Same gradient + grid as Home hero */}
-        <div className="absolute inset-0 bg-gradient-to-br from-teal-50/60 via-white to-slate-50" />
+        <div className="absolute inset-0 bg-linear-to-br from-teal-50/60 via-white to-slate-50" />
         <div
           className="absolute inset-0 opacity-40"
           style={{
@@ -159,6 +160,9 @@ export default function ArticlePage() {
           {/* Meta */}
           <Reveal delay={60}>
             <div className="flex flex-wrap items-center gap-3 mb-5">
+              <div className="mb-4">
+                <Badge variant="slate">{article.category}</Badge>
+              </div>
               <CategoryBadge variant="teal">Analisi</CategoryBadge>
               <span className="text-xs text-slate-400">Marzo 2026</span>
               <span className="text-xs text-slate-300">·</span>
@@ -220,7 +224,7 @@ export default function ArticlePage() {
                 '"Intervista esclusiva: il segreto per diventare ricchi."',
               ].map((q) => (
                 <div key={q} className="flex items-start gap-3">
-                  <div className="w-0.5 self-stretch bg-teal-400 rounded-full flex-shrink-0" />
+                  <div className="w-0.5 self-stretch bg-teal-400 rounded-full shrink-0" />
                   <p className="text-sm text-slate-600 italic leading-relaxed">
                     {q}
                   </p>
@@ -265,7 +269,7 @@ export default function ArticlePage() {
           {STEPS.map((s, i) => (
             <Reveal key={s.n} delay={i * 55}>
               <div className="flex items-center gap-4 p-4 rounded-xl border border-slate-200 bg-white hover:border-teal-200 hover:bg-teal-50/40 transition-all group cursor-default">
-                <span className="text-sm font-bold text-teal-600 w-7 flex-shrink-0">
+                <span className="text-sm font-bold text-teal-600 w-7 shrink-0">
                   {s.n}
                 </span>
                 <span className="text-sm text-slate-700 leading-snug flex-1">
@@ -273,7 +277,7 @@ export default function ArticlePage() {
                 </span>
                 <ChevronRight
                   size={14}
-                  className="text-slate-200 flex-shrink-0 group-hover:text-teal-400 transition-colors"
+                  className="text-slate-200 shrink-0 group-hover:text-teal-400 transition-colors"
                 />
               </div>
             </Reveal>
@@ -283,7 +287,7 @@ export default function ArticlePage() {
         {/* FBI callout — mirrors KPICard look */}
         <Reveal>
           <div className="flex items-start gap-4 p-5 rounded-2xl border border-indigo-100 bg-indigo-50/50 mb-12">
-            <div className="w-10 h-10 rounded-xl bg-white border border-indigo-100 flex items-center justify-center flex-shrink-0 text-lg shadow-sm">
+            <div className="w-10 h-10 rounded-xl bg-white border border-indigo-100 flex items-center justify-center shrink-0 text-lg shadow-sm">
               🌐
             </div>
             <p className="text-sm text-slate-700 leading-relaxed">
@@ -317,10 +321,7 @@ export default function ArticlePage() {
           {SIGNALS.map((s, i) => (
             <Reveal key={i} delay={i * 50}>
               <div className="flex items-center gap-4 px-5 py-4 bg-white hover:bg-amber-50/40 transition-colors">
-                <AlertTriangle
-                  size={15}
-                  className="text-amber-500 flex-shrink-0"
-                />
+                <AlertTriangle size={15} className="text-amber-500 shrink-0" />
                 <span className="text-sm text-slate-700 leading-snug">
                   {s.text}
                 </span>
@@ -426,7 +427,7 @@ export default function ArticlePage() {
                 </div>
                 <ExternalLink
                   size={14}
-                  className="text-slate-300 flex-shrink-0 mt-1 group-hover:text-teal-500 transition-colors"
+                  className="text-slate-300 shrink-0 mt-1 group-hover:text-teal-500 transition-colors"
                 />
               </a>
             </Reveal>
