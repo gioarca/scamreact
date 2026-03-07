@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from "react";
+import { Link } from "react-router-dom";
 import {
   Shield,
   BarChart3,
@@ -21,28 +22,27 @@ const API_URL = import.meta.env.VITE_API_URL + "/api/reports/stats";
 const MOCK_ARTICLES = [
   {
     id: "1",
-    title: "Come riconoscere un SMS truffa in 5 secondi",
-    excerpt:
-      "Impara i segnali chiave che distinguono un messaggio autentico da una truffa. Piccoli dettagli che fanno la differenza.",
-    date: "2026-02-10",
-    category: "Guida",
+    title: "Guadagni facili online: come riconoscere le truffe più comuni",
+    excerpt: "Attenzione alle Truffe con Deepfake e Falsi Investimenti",
+    date: "2026-03-05",
+    category: "Articolo",
   },
-  {
-    id: "2",
-    title: "Truffe bancarie: il trend del 2026",
-    excerpt:
-      "Analisi delle nuove tecniche usate dai truffatori per impersonare operatori bancari e come difendersi.",
-    date: "2026-02-08",
-    category: "Analisi",
-  },
-  {
-    id: "3",
-    title: "Falsi investimenti crypto: cosa sapere",
-    excerpt:
-      "Le truffe sugli investimenti in criptovalute continuano a crescere. Ecco come identificarle prima di cadere nella trappola.",
-    date: "2026-02-05",
-    category: "Approfondimento",
-  },
+  // {
+  //   id: "2",
+  //   title: "Truffe bancarie: il trend del 2026",
+  //   excerpt:
+  //     "Analisi delle nuove tecniche usate dai truffatori per impersonare operatori bancari e come difendersi.",
+  //   date: "2026-02-08",
+  //   category: "Analisi",
+  // },
+  // {
+  //   id: "3",
+  //   title: "Falsi investimenti crypto: cosa sapere",
+  //   excerpt:
+  //     "Le truffe sugli investimenti in criptovalute continuano a crescere. Ecco come identificarle prima di cadere nella trappola.",
+  //   date: "2026-02-05",
+  //   category: "Approfondimento",
+  // },
 ];
 
 // ============================================================
@@ -548,10 +548,10 @@ function Articles() {
               Guide e approfondimenti per proteggerti
             </p>
           </div>
-          <Button variant="ghost" size="sm">
+          {/* <Button variant="ghost" size="sm">
             Vedi tutti
             <ArrowRight size={16} />
-          </Button>
+          </Button> */}
         </div>
 
         <div className="grid sm:grid-cols-3 gap-6">
@@ -572,27 +572,29 @@ function ArticleCard({ article }) {
   };
 
   return (
-    <Card hoverable className="flex flex-col">
-      <div className="p-6 flex flex-col flex-1">
-        <div className="mb-3">
-          <Badge variant={categoryColors[article.category] || "slate"}>
-            {article.category}
-          </Badge>
+    <Link to={`/articoli/${article.id}`} className="block group">
+      <Card hoverable className="flex flex-col">
+        <div className="p-6 flex flex-col flex-1">
+          <div className="mb-3">
+            <Badge variant={categoryColors[article.category] || "slate"}>
+              {article.category}
+            </Badge>
+          </div>
+          <h3 className="text-base font-bold text-slate-900 leading-snug mb-3 group-hover:text-teal-700 transition-colors line-clamp-2">
+            {article.title}
+          </h3>
+          <p className="text-sm text-slate-600 leading-relaxed mb-4 flex-1 line-clamp-3">
+            {article.excerpt}
+          </p>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400">
+              {formatDate(article.date)}
+            </span>
+            <ArrowRight size={16} className="text-teal-500" />
+          </div>
         </div>
-        <h3 className="text-base font-bold text-slate-900 leading-snug mb-3 group-hover:text-teal-700 transition-colors line-clamp-2">
-          {article.title}
-        </h3>
-        <p className="text-sm text-slate-600 leading-relaxed mb-4 flex-1 line-clamp-3">
-          {article.excerpt}
-        </p>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-slate-400">
-            {formatDate(article.date)}
-          </span>
-          <ArrowRight size={16} className="text-teal-500" />
-        </div>
-      </div>
-    </Card>
+      </Card>
+    </Link>
   );
 }
 
