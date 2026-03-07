@@ -396,7 +396,7 @@ function StepMessage({ value, onChange, redacted, onNext }) {
   const ready = value.length >= MIN_MSG_LEN;
 
   useEffect(() => {
-    textareaRef.current?.focus();
+    textareaRef.current?.focus({ preventScroll: true });
   }, []);
 
   return (
@@ -752,59 +752,6 @@ function StatCard({ label, value, sub, raw = false }) {
   );
 }
 
-// function UserCard({ user }) {
-//   const progress = Math.min((user.xp / user.xpToNext) * 100, 100);
-//   return (
-//     <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
-//       <div className="flex items-center gap-4 mb-4">
-//         <div className="w-12 h-12 rounded-2xl bg-teal-600 flex items-center justify-center text-white font-bold text-lg shrink-0">
-//           {user.level}
-//         </div>
-//         <div className="min-w-0 flex-1">
-//           <div className="font-bold text-slate-900">
-//             Difensore Lv. {user.level}
-//           </div>
-//           <div className="text-xs text-slate-500">
-//             {user.reportsCount} segnalazioni
-//           </div>
-//         </div>
-//         <div className="text-xs font-semibold text-slate-400">
-//           {user.xp}/{user.xpToNext} XP
-//         </div>
-//       </div>
-
-//       {/* XP bar */}
-//       <div className="h-1.5 bg-slate-100 rounded-full overflow-hidden mb-4">
-//         <div
-//           className="h-full bg-teal-500 transition-all duration-500"
-//           style={{ width: `${progress}%` }}
-//         />
-//       </div>
-
-//       {/* Badges */}
-//       <div className="flex gap-2">
-//         {BADGES.map((b) => (
-//           <div
-//             key={b.id}
-//             title={`${b.name} (+${b.xp} XP)`}
-//             className={`
-//               w-10 h-10 rounded-xl flex items-center justify-center text-xl
-//               border-2 transition-all
-//               ${
-//                 user.badges.includes(b.id)
-//                   ? "border-amber-300 bg-amber-50"
-//                   : "border-slate-100 bg-slate-50 opacity-30 grayscale"
-//               }
-//             `}
-//           >
-//             {b.icon}
-//           </div>
-//         ))}
-//       </div>
-//     </div>
-//   );
-// }
-
 function ReportRow({ report }) {
   const type = SCAM_TYPES.find((t) => t.id === report.scamType);
   const ch = CHANNELS.find((c) => c.id === report.channel);
@@ -895,7 +842,10 @@ export default function Form() {
   );
 
   return (
-    <section id="form" className="py-24 bg-slate-50 border-t border-slate-100">
+    <section
+      id="form"
+      className="py-24 bg-slate-50 border-t border-slate-100 scroll-mt-20"
+    >
       <div className="max-w-2xl mx-auto px-4 sm:px-6">
         {/* Header */}
         <div className="text-center mb-10">

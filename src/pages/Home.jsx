@@ -14,7 +14,6 @@ import Button from "../components/UI/Button.jsx";
 import Card from "../components/UI/Card.jsx";
 import Header from "../components/Header.jsx";
 import Form from "../components/Form.jsx";
-import Footer from "../components/Footer.jsx";
 
 const API_URL = "http://localhost:3000/api/reports/stats";
 
@@ -58,10 +57,6 @@ function formatDate(iso) {
     year: "numeric",
   });
 }
-
-// ============================================================
-// UI PRIMITIVES
-// ============================================================
 
 // ============================================================
 // SECTIONS
@@ -115,7 +110,7 @@ function Hero() {
             onClick={() =>
               document
                 .getElementById("form")
-                ?.scrollIntoView({ behavior: "smooth" })
+                ?.scrollIntoView({ behavior: "smooth", block: "start" })
             }
             variant="outline"
             size="lg"
@@ -494,7 +489,7 @@ function ChiSiamo() {
 
               <div className="space-y-4 text-slate-600 leading-relaxed">
                 <p>
-                  Tutto inizia nel 2023, su una videochiamata tra tre amici
+                  Tutto inizia nel 2025, su una videochiamata tra tre amici
                   stanchi di vedere persone care cadere in trappole online.
                   Dario aveva appena perso i risparmi. Nicola stava ancora
                   aiutando sua nonna. Giorgio aveva trovato il codice sorgente
@@ -507,13 +502,13 @@ function ChiSiamo() {
                   cresce insieme alle truffe che cerca di smascherare.
                 </p>
                 <p>
-                  Oggi Scam React conta oltre{" "}
+                  Oggi ScamReact vuole diventare il punto di riferimento{" "}
                   <strong className="text-slate-900">
-                    12.000 segnalazioni
+                    per le migliaia di segnalazioni
                   </strong>{" "}
                   verificate e una community di{" "}
-                  <strong className="text-slate-900">40k persone</strong> che si
-                  proteggono a vicenda ogni giorno.
+                  <strong className="text-slate-900">persone vere</strong> che
+                  si proteggono a vicenda ogni giorno.
                 </p>
               </div>
 
@@ -635,8 +630,7 @@ export default function HomePage() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
-      <Header />
+    <div className="min-h-screen">
       <Hero />
       <KPIBar stats={stats} />
       <Articles />

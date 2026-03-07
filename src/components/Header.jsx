@@ -44,24 +44,26 @@ export default function Header() {
             <div className="absolute inset-0 bg-teal-400/20 blur-lg rounded-full" />
           </div>
 
-          <div>
-            <div className="text-lg font-bold text-slate-900 leading-none">
-              Scam React
+          <a href="/">
+            <div>
+              <div className="text-lg font-bold text-slate-900 leading-none">
+                ScamReact
+              </div>
+              <div className="text-[10px] text-slate-500 font-medium tracking-wide">
+                Difesa collettiva
+              </div>
             </div>
-            <div className="text-[10px] text-slate-500 font-medium tracking-wide">
-              Difesa collettiva
-            </div>
-          </div>
+          </a>
         </div>
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          <button
+          {/* <button
             onClick={() => scrollToSection("verifica")}
             className="text-slate-600 hover:text-teal-600 transition-colors"
           >
             Le truffe
-          </button>
+          </button> */}
 
           <button
             onClick={() => scrollToSection("articoli")}
