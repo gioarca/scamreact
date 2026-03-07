@@ -269,8 +269,12 @@ function StepMessage({ value, onChange, redacted, onNext }) {
           htmlFor="msg-input"
           className="block text-sm font-semibold text-slate-800 mb-2"
         >
-          Descrivi o incolla il messaggio sospetto
+          Descrivi brevemente cos'è successo, includendo eventuali messaggi
+          ricevuti.
         </label>
+        <p className="text-xs text-black mb-1.5">
+          Più dettagli fornisci, più aiuti la community a riconoscere la truffa.
+        </p>
         <textarea
           id="msg-input"
           ref={textareaRef}

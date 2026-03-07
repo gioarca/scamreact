@@ -12,10 +12,9 @@ import {
 import Badge from "../components/UI/Badge.jsx";
 import Button from "../components/UI/Button.jsx";
 import Card from "../components/UI/Card.jsx";
-import Header from "../components/Header.jsx";
 import Form from "../components/Form.jsx";
 
-const API_URL = "http://localhost:3000/api/reports/stats";
+const API_URL = import.meta.env.VITE_API_URL + "/api/reports/stats";
 
 // =============== MOCK DATA =======================
 
@@ -126,10 +125,7 @@ function Hero() {
             <CheckCircle size={16} className="text-green-500" />
             <span>100% anonimo</span>
           </div>
-          <div className="flex items-center gap-1.5">
-            <Lock size={16} className="text-slate-400" />
-            <span>Nessun dato personale</span>
-          </div>
+
           <div className="flex items-center gap-1.5">
             <Shield size={16} className="text-teal-500" />
             <span>Open source</span>
