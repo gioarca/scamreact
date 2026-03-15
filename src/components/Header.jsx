@@ -58,12 +58,12 @@ export default function Header() {
 
         {/* Desktop Nav */}
         <nav className="hidden md:flex items-center gap-6 text-sm font-medium">
-          {/* <button
-            onClick={() => scrollToSection("verifica")}
+          <button
+            // onClick={() => scrollToSection("manifesto")}
             className="text-slate-600 hover:text-teal-600 transition-colors"
           >
-            Le truffe
-          </button> */}
+            Manifesto
+          </button>
 
           <button
             onClick={() => scrollToSection("articoli")}
