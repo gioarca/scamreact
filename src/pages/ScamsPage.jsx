@@ -313,6 +313,7 @@ function KPIStrip({ reports }) {
 
   return (
     <div
+      className="kpi-grid"
       style={{
         display: "grid",
         gridTemplateColumns: "repeat(4,1fr)",
@@ -538,12 +539,13 @@ function PowerBIPanel({ isOpen, onClose }) {
 // ============================================================
 
 export default function ScamsPage() {
-  const [reports, setReports] = useState([]);   // array di segnalazioni
+  const [reports, setReports] = useState([]); // array di segnalazioni
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [activeType, setActiveType] = useState("all");
   const [activeRegion, setActiveRegion] = useState(null);
   const [powerBIOpen, setPowerBIOpen] = useState(false);
+  const [mapOpen, setMapOpen] = useState(false); // collapsibile su mobile
 
   useEffect(() => {
     fetch(API_URL)
@@ -553,7 +555,11 @@ export default function ScamsPage() {
       })
       .then((data) => {
         // Supporta sia array diretto che risposta paginata { data: [...] }
-        const list = Array.isArray(data) ? data : (Array.isArray(data.data) ? data.data : []);
+        const list = Array.isArray(data)
+          ? data
+          : Array.isArray(data.data)
+            ? data.data
+            : [];
         setReports(list);
         setLoading(false);
       })
@@ -589,18 +595,41 @@ export default function ScamsPage() {
         @import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&display=swap');
         .scams-page * { box-sizing: border-box; }
         .scam-list { display: flex; flex-direction: column; gap: 10px; }
-        .scam-list-scroll { overflow-y: auto; max-height: 680px; padding-right: 4px; }
-        .scam-list-scroll::-webkit-scrollbar { width: 4px; }
-        .scam-list-scroll::-webkit-scrollbar-track { background: transparent; }
-        .scam-list-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+
+        /* Desktop: lista con scroll interno */
+        @media (min-width: 900px) {
+          .scam-list-scroll { overflow-y: auto; max-height: 680px; padding-right: 4px; }
+          .scam-list-scroll::-webkit-scrollbar { width: 4px; }
+          .scam-list-scroll::-webkit-scrollbar-track { background: transparent; }
+          .scam-list-scroll::-webkit-scrollbar-thumb { background: #e2e8f0; border-radius: 4px; }
+        }
+
+        /* Tablet e mobile: layout verticale */
         @media (max-width: 900px) {
           .main-layout { flex-direction: column !important; }
           .map-col { width: 100% !important; position: static !important; }
-          .kpi-strip { grid-template-columns: repeat(2,1fr) !important; }
+          .kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
         }
+
+        /* Mobile: filtri orizzontali scrollabili */
         @media (max-width: 600px) {
-          .kpi-strip { grid-template-columns: 1fr 1fr !important; }
+          .kpi-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .filters-scroll {
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+            scrollbar-width: none;
+            padding-bottom: 2px;
+          }
+          .filters-scroll::-webkit-scrollbar { display: none; }
+          .filters-inner { flex-wrap: nowrap !important; }
+          .page-header { flex-direction: column !important; align-items: flex-start !important; }
+          .powerbi-btn { width: 100% !important; justify-content: center !important; }
+          .search-bar { max-width: 100% !important; }
+          .map-toggle-btn { display: flex !important; }
+          .map-col-mobile-hidden { display: none; }
+          .map-col-mobile-visible { display: block !important; }
         }
+        .map-toggle-btn { display: none; }
       `}</style>
 
       <div
@@ -617,6 +646,7 @@ export default function ScamsPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 1.5rem" }}>
           {/* Header */}
           <div
+            className="page-header"
             style={{
               display: "flex",
               alignItems: "flex-start",
@@ -678,6 +708,7 @@ export default function ScamsPage() {
             </div>
 
             <button
+              className="powerbi-btn"
               onClick={() => setPowerBIOpen(true)}
               style={{
                 display: "inline-flex",
@@ -714,7 +745,10 @@ export default function ScamsPage() {
               gap: 10,
             }}
           >
-            <div style={{ position: "relative", maxWidth: 420 }}>
+            <div
+              className="search-bar"
+              style={{ position: "relative", maxWidth: 420 }}
+            >
               <Search
                 size={15}
                 style={{
@@ -744,36 +778,39 @@ export default function ScamsPage() {
               />
             </div>
 
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                gap: 6,
-                flexWrap: "wrap",
-              }}
-            >
-              <Filter size={13} style={{ color: "#94a3b8", flexShrink: 0 }} />
-              {SCAM_FILTERS.map((f) => (
-                <FilterChip
-                  key={f.key}
-                  label={f.label}
-                  active={activeType === f.key}
-                  color={
-                    f.key === "all"
-                      ? "#0d9488"
-                      : (SCAM_TYPE[f.key]?.color ?? "#0d9488")
-                  }
-                  onClick={() => setActiveType(f.key)}
-                />
-              ))}
-              {activeRegion && (
-                <FilterChip
-                  label={`📍 ${activeRegion}`}
-                  active
-                  color="#3b82f6"
-                  onClick={() => setActiveRegion(null)}
-                />
-              )}
+            <div className="filters-scroll">
+              <div
+                className="filters-inner"
+                style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 6,
+                  flexWrap: "wrap",
+                }}
+              >
+                <Filter size={13} style={{ color: "#94a3b8", flexShrink: 0 }} />
+                {SCAM_FILTERS.map((f) => (
+                  <FilterChip
+                    key={f.key}
+                    label={f.label}
+                    active={activeType === f.key}
+                    color={
+                      f.key === "all"
+                        ? "#0d9488"
+                        : (SCAM_TYPE[f.key]?.color ?? "#0d9488")
+                    }
+                    onClick={() => setActiveType(f.key)}
+                  />
+                ))}
+                {activeRegion && (
+                  <FilterChip
+                    label={`📍 ${activeRegion}`}
+                    active
+                    color="#3b82f6"
+                    onClick={() => setActiveRegion(null)}
+                  />
+                )}
+              </div>
             </div>
           </div>
 
@@ -861,67 +898,102 @@ export default function ScamsPage() {
                 top: "5rem",
               }}
             >
-              <div
+              {/* Header mappa — su mobile è cliccabile per espandere */}
+              <button
+                onClick={() => setMapOpen((v) => !v)}
                 style={{
                   display: "flex",
                   alignItems: "center",
-                  gap: 6,
-                  marginBottom: "0.75rem",
+                  justifyContent: "space-between",
+                  width: "100%",
+                  background: "none",
+                  border: "none",
+                  cursor: "pointer",
+                  padding: 0,
+                  marginBottom: mapOpen ? "0.75rem" : 0,
                 }}
               >
-                <MapPin size={14} style={{ color: "#0d9488" }} />
-                <p
-                  style={{
-                    fontSize: 12,
-                    fontWeight: 600,
-                    color: "#0f172a",
-                    margin: 0,
-                  }}
-                >
-                  Distribuzione geografica
-                </p>
-              </div>
-
-              {activeRegion && (
-                <div
-                  style={{
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "space-between",
-                    marginBottom: 8,
-                    padding: "5px 10px",
-                    borderRadius: 8,
-                    background: "#f0fdfa",
-                    border: "0.5px solid #99f6e4",
-                  }}
-                >
-                  <span
-                    style={{ fontSize: 12, color: "#0d9488", fontWeight: 500 }}
-                  >
-                    {activeRegion} · {regionCounts[activeRegion] ?? 0} segn.
-                  </span>
-                  <button
-                    onClick={() => setActiveRegion(null)}
+                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <MapPin size={14} style={{ color: "#0d9488" }} />
+                  <p
                     style={{
-                      background: "none",
-                      border: "none",
-                      cursor: "pointer",
-                      padding: 0,
-                      lineHeight: 1,
+                      fontSize: 12,
+                      fontWeight: 600,
+                      color: "#0f172a",
+                      margin: 0,
                     }}
                   >
-                    <X size={13} color="#0d9488" />
-                  </button>
+                    Distribuzione geografica
+                  </p>
                 </div>
-              )}
+                {/* Chevron visibile solo su mobile */}
+                <span
+                  className="map-toggle-btn"
+                  style={{
+                    fontSize: 11,
+                    color: "#0d9488",
+                    fontWeight: 500,
+                    alignItems: "center",
+                    gap: 4,
+                  }}
+                >
+                  {mapOpen ? "Chiudi ▲" : "Mostra ▼"}
+                </span>
+              </button>
 
-              <ItalyMap
-                data={regionCounts}
-                activeRegion={activeRegion}
-                onRegionClick={(region) =>
-                  setActiveRegion((prev) => (prev === region ? null : region))
+              {/* Contenuto mappa: sempre visibile su desktop, toggle su mobile */}
+              <div
+                className={
+                  mapOpen ? "map-col-mobile-visible" : "map-col-mobile-hidden"
                 }
-              />
+                style={{ display: "block" }}
+              >
+                {activeRegion && (
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "space-between",
+                      marginBottom: 8,
+                      marginTop: 8,
+                      padding: "5px 10px",
+                      borderRadius: 8,
+                      background: "#f0fdfa",
+                      border: "0.5px solid #99f6e4",
+                    }}
+                  >
+                    <span
+                      style={{
+                        fontSize: 12,
+                        color: "#0d9488",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {activeRegion} · {regionCounts[activeRegion] ?? 0} segn.
+                    </span>
+                    <button
+                      onClick={() => setActiveRegion(null)}
+                      style={{
+                        background: "none",
+                        border: "none",
+                        cursor: "pointer",
+                        padding: 0,
+                        lineHeight: 1,
+                      }}
+                    >
+                      <X size={13} color="#0d9488" />
+                    </button>
+                  </div>
+                )}
+
+                <ItalyMap
+                  data={regionCounts}
+                  activeRegion={activeRegion}
+                  onRegionClick={(region) =>
+                    setActiveRegion((prev) => (prev === region ? null : region))
+                  }
+                />
+              </div>
             </div>
           </div>
         </div>

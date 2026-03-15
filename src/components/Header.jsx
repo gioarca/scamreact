@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { ShieldCheck, ArrowRight, Menu, X } from "lucide-react";
 import Button from "./UI/Button.jsx";
 
@@ -14,6 +14,7 @@ export default function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const location = useLocation();
+  const navigate = useNavigate();
   const isHome = location.pathname === "/";
 
   useEffect(() => {
@@ -22,9 +23,6 @@ export default function Header() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Chiudi il menu mobile ad ogni cambio pagina
-  useEffect(() => setMobileOpen(false), [location.pathname]);
-
   const scrollTo = (id) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
     setMobileOpen(false);
@@ -32,11 +30,12 @@ export default function Header() {
 
   const handleNavClick = (link) => {
     if (link.type === "scroll") {
+      setMobileOpen(false);
       if (isHome) {
         scrollTo(link.target);
       } else {
         // Torna alla home e poi scrolla (state passato a HomePage)
-        window.location.href = `/#${link.target}`;
+        navigate(`/#${link.target}`);
       }
     }
   };
@@ -109,9 +108,7 @@ export default function Header() {
         {/* ── CTA Desktop ── */}
         <div className="hidden md:flex items-center gap-2">
           <Button
-            onClick={() =>
-              isHome ? scrollTo("form") : (window.location.href = "/#form")
-            }
+            onClick={() => (isHome ? scrollTo("form") : navigate("/#form"))}
             variant="primary"
             size="sm"
           >
@@ -163,9 +160,7 @@ export default function Header() {
 
             <div className="pt-2 mt-1 border-t border-slate-100">
               <Button
-                onClick={() =>
-                  isHome ? scrollTo("form") : (window.location.href = "/#form")
-                }
+                onClick={() => (isHome ? scrollTo("form") : navigate("/#form"))}
                 variant="primary"
                 size="sm"
                 className="w-full justify-center"
