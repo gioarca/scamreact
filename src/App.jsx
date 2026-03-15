@@ -1,6 +1,5 @@
 import React from "react";
 import { BrowserRouter as Router } from "react-router-dom";
-import Head from "./components/Header";
 import Header from "./components/Header";
 import Footer from "./components/Footer";
 import Pages from "./pages/Pages";
@@ -9,12 +8,11 @@ import "./index.css";
 function App() {
   return (
     <>
-      <Head />
-      <Header />
       <Router>
+        <Header />
         <Pages />
+        <Footer />
       </Router>
-      <Footer />
     </>
   );
 }
