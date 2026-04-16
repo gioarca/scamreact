@@ -72,12 +72,20 @@ const founders = [
     tag: "Investimento fraudolento",
     story: (
       <>
-        Nel 2024 <strong>ho perso i miei risparmi</strong> in un investimento
+        {/* Nel 2024 <strong>ho perso i miei risparmi</strong> in un investimento
         che sembrava legittimo. Nessun segnale evidente, nessun campanello
         d'allarme — almeno così credevo. Dopo mesi a ricostruire cosa fosse
         andato storto, ho capito che{" "}
-        <strong>il problema non era la mia ingenuità</strong>, ma la mancanza di
-        strumenti accessibili per riconoscere queste trappole in anticipo.
+        il problema non era la mia ingenuità, ma la mancanza di
+        strumenti accessibili per riconoscere queste trappole in anticipo. */}
+        Questa idea nasce dopo{" "}
+        <strong>
+          aver vissuto in prima persona una truffa durante lavori in casa.
+        </strong>{" "}
+        Cercando online non trovai nulla di simile: sembrava un semplice lavoro
+        in economia, ma si trasformò in un incubo. Sentirmi dire che non si
+        poteva fare nulla mi ha spinto a immaginare ScamReact: uno spazio dove
+        trasformare esperienze in protezione per tutti.
       </>
     ),
   },
@@ -205,13 +213,13 @@ function KPIBar({ stats }) {
   return (
     <section className="border-y border-slate-200 bg-white">
       <div className="max-w-5xl mx-auto px-4 sm:px-6 py-12">
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-6">
+        <div className="grid grid-cols-2 gap-6 align-middle text-center object-center">
           <KPICard
             value={stats.totalReports ?? "…"}
             label="Segnalazioni totali"
             icon={<BarChart3 size={20} className="text-teal-600" />}
           />
-          <KPICard
+          {/* <KPICard
             value={stats.recentReports}
             label="Ultimi 7 giorni"
             icon={<TrendingUp size={20} className="text-blue-500" />}
@@ -220,7 +228,7 @@ function KPIBar({ stats }) {
             value={stats.uniquePatterns}
             label="Pattern unici"
             icon={<Shield size={20} className="text-indigo-500" />}
-          />
+          /> */}
           <KPICard
             value="100%"
             label="Anonimo e sicuro"
@@ -294,10 +302,10 @@ function Manifesto() {
             <span className="font-semibold text-slate-800">
               Attivare il potere della community.
             </span>{" "}
-            ScamReact nasce da una truffa subita da un amico e dalla
-            consapevolezza che quegli avvisi condivisi nelle chat di famiglia,
-            negli articoli o sui social meritano un unico luogo chiaro e
-            accessibile.
+            <br />
+            ScamReact nasce da una truffa subita e dalla consapevolezza che
+            quegli avvisi condivisi nelle chat di famiglia, negli articoli o sui
+            social meritano un unico luogo chiaro e accessibile.
           </p>
           <p>
             Uno spazio dove trovare gli ultimi schemi ricorrenti, le truffe
@@ -305,8 +313,9 @@ function Manifesto() {
             ogni esperienza in protezione per gli altri.
           </p>
           <p className="font-semibold text-slate-800 text-xl">
-            La tua storia può proteggere qualcuno. Unisciti. Condividi. Aiuta a
-            fermare la prossima truffa.
+            La tua storia può proteggere qualcuno. Unisciti. Condividi.
+            <br />
+            Aiuta a fermare la prossima truffa.
           </p>
         </div>
 
@@ -816,7 +825,7 @@ function ChiSiamo() {
                 insieme alle truffe che cerca di smascherare.
               </p>
 
-              <a
+              {/* <a
                 href="#community"
                 style={{
                   display: "inline-flex",
@@ -847,7 +856,7 @@ function ChiSiamo() {
                     strokeLinejoin="round"
                   />
                 </svg>
-              </a>
+              </a> */}
             </div>
           </div>
         </div>

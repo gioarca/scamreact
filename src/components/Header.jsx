@@ -5,9 +5,9 @@ import Button from "./UI/Button.jsx";
 
 const NAV_LINKS = [
   { label: "Manifesto", type: "scroll", target: "manifesto", onlyHome: true },
-  { label: "Truffe", type: "route", target: "/scams" },
   { label: "Articoli", type: "scroll", target: "articoli", onlyHome: true },
   { label: "Chi siamo", type: "scroll", target: "storia", onlyHome: true },
+  { label: "Truffe", type: "route", target: "/scams" },
 ];
 
 export default function Header() {

@@ -284,10 +284,26 @@ function StepMessage({ value, onChange, redacted, onNext }) {
           rows={5}
           className="w-full px-4 py-3 text-sm text-black border-2 border-slate-200 rounded-xl focus:border-teal-400 focus:outline-none resize-none transition-colors placeholder:text-slate-400"
         />
-        <div className="flex items-center justify-between mt-1.5">
+        <div className="block items-center justify-between mt-1.5">
           <span className="text-xs text-slate-400">
             {value.length} / {MIN_MSG_LEN} caratteri minimi
           </span>
+          <p className="block items-center justify-between text-xs text-black font-semibold mt-4">
+            Linee guida per la segnalazione
+            <br /> ScamReact raccoglie segnalazioni degli utenti per
+            identificare possibili schemi di truffa online e offline.
+            <br />
+            Quando invii una segnalazione: descrivi i fatti nel modo più chiaro
+            e neutrale possibile inserisci solo informazioni rilevanti per la
+            segnalazione (ad esempio email, siti web o numeri di telefono
+            utilizzati nel contatto ricevuto) non inserire nomi di persone,
+            indirizzi privati o accuse personali.
+            <br /> Le informazioni pubblicate su ScamReact sono contributi degli
+            utenti e non rappresentano accuse verificate. La piattaforma non
+            garantisce l’accuratezza delle segnalazioni e si riserva il diritto
+            di moderare, modificare o rimuovere contenuti che possano violare la
+            legge o contenere dati personali non appropriati.
+          </p>
           {ready && (
             <span className="text-xs text-green-600 font-semibold">
               ✓ Pronto
@@ -656,7 +672,7 @@ export default function Form() {
         {/* Header */}
         <div className="text-center mb-10">
           <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-green-50 border border-green-200 text-green-700 text-xs font-bold tracking-wide mb-5">
-            ✓ Gratuito · Sicuro · Anonimo
+            Gratuito · Sicuro · Anonimo
           </div>
           <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 tracking-tight">
             Segnala una truffa

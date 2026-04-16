@@ -549,7 +549,7 @@ const founders = [
 
 // ─── Avatar with geometric SVG pattern ──────────────────────────────────────
 function FounderAvatar({ founder, size = 120 }) {
-  const id = `pattern-${founder.initials}`;
+  // const id = `pattern-${founder.initials}`;
   const isDario = founder.initials === "DA";
 
   return (
