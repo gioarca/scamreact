@@ -100,12 +100,12 @@ const founders = [
     tag: "Reverse engineering",
     story: (
       <>
-        Da sviluppatore, un giorno ho trovato il{" "}
-        <strong>codice sorgente di una truffa attiva su GitHub</strong> —
-        deployment automatizzato, fake reviews, pagine clonate di banche reali.
-        Ho realizzato che le truffe non sono improvvisate: sono{" "}
-        <strong>prodotti ingegnerizzati</strong>. Da quel momento ho iniziato a
-        smontarle pubblicamente, una alla volta.
+        Un giorno, durante un acquisto{" "}
+        <strong>mi hanno clonato una carta di credito</strong>. Ho realizzato
+        che le truffe non sono improvvisate: sono{" "}
+        <strong>prodotti ingegnerizzati</strong>. Da allora ho iniziato ad
+        ascoltare le storie di persone che avessero subito degli scam e a
+        capirne di più.
       </>
     ),
   },

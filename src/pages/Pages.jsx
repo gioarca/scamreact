@@ -8,6 +8,7 @@ import HomePage from "./HomePage.jsx";
 import ScrollToTop from "../components/ScrollToTop.jsx";
 import ScamsPage from "./ScamsPage.jsx";
 import Header from "../components/Header.jsx";
+import Verifica from "./Verifica.jsx";
 
 function Pages() {
   const location = useLocation();
@@ -23,6 +24,7 @@ function Pages() {
           <Route path="/truffe" element={<Truffe />} />
           <Route path="/articoli/:id" element={<ArticlePage />} />
           <Route path="/scams" element={<ScamsPage />} />
+          <Route path="/verifica" element={<Verifica />} />
         </Routes>
       </AnimatePresence>
     </>
