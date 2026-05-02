@@ -65,7 +65,7 @@ function Field({ label, optional, hint, children }) {
       {children}
       {hint && (
         <p className="text-xs text-slate-400 mt-2 flex items-center gap-1.5">
-          <Lock size={10} className="shrink-0" />
+          <Lock size={10} className="flex-shrink-0" />
           {hint}
         </p>
       )}
@@ -111,12 +111,19 @@ function Divider({ label }) {
 //   {{src_email}}, {{src_phone}}, {{src_website}},
 //   {{src_message}}, {{user_email}}
 //
-// ⚠️  Sostituisci le tre costanti sotto con i tuoi valori
-//     da EmailJS → Account → API Keys / Email Services.
+// ⚠️  Non scrivere mai queste chiavi direttamente nel codice.
+//     Crea un file .env nella root del progetto con:
+//
+//       VITE_EMAILJS_SERVICE_ID=service_abc123
+//       VITE_EMAILJS_TEMPLATE_ID=template_xyz789
+//       VITE_EMAILJS_PUBLIC_KEY=nBwk1Dh-6_dCdi75H
+//
+//     Assicurati che .env sia nel .gitignore.
+//     Vite espone solo le variabili con prefisso VITE_ al frontend.
 
-const EMAILJS_SERVICE_ID = "YOUR_SERVICE_ID"; // es. "service_abc123"
-const EMAILJS_TEMPLATE_ID = "YOUR_TEMPLATE_ID"; // es. "template_xyz789"
-const EMAILJS_PUBLIC_KEY = "YOUR_PUBLIC_KEY"; // es. "nBwk1Dh-6_dCdi75H"
+const EMAILJS_SERVICE_ID = import.meta.env.VITE_EMAILJS_SERVICE_ID;
+const EMAILJS_TEMPLATE_ID = import.meta.env.VITE_EMAILJS_TEMPLATE_ID;
+const EMAILJS_PUBLIC_KEY = import.meta.env.VITE_EMAILJS_PUBLIC_KEY;
 
 function WaitlistModal({ onClose, onSuccess }) {
   // Ref al <form> HTML — emailjs.sendForm() ne legge i campi via DOM
@@ -167,15 +174,15 @@ function WaitlistModal({ onClose, onSuccess }) {
         }}
       >
         {/* Striscia colorata in cima */}
-        <div className="h-1.5 bg-linear-to-r from-teal-400 via-teal-500 to-teal-400 shrink-0" />
+        <div className="h-1.5 bg-gradient-to-r from-teal-400 via-teal-500 to-teal-400 flex-shrink-0" />
 
         {/* Handle drag mobile */}
-        <div className="flex justify-center pt-2 pb-0 sm:hidden shrink-0">
+        <div className="flex justify-center pt-2 pb-0 sm:hidden flex-shrink-0">
           <div className="w-8 h-1 bg-slate-200 rounded-full" />
         </div>
 
         {/* Header */}
-        <div className="flex items-center justify-between px-7 pt-6 pb-5 shrink-0">
+        <div className="flex items-center justify-between px-7 pt-6 pb-5 flex-shrink-0">
           <div>
             <p className="text-[11px] font-bold text-teal-600 uppercase tracking-widest mb-1">
               Accesso anticipato
@@ -282,7 +289,7 @@ function WaitlistModal({ onClose, onSuccess }) {
         </form>
 
         {/* Footer — il button è type="submit" così triggera onSubmit del form */}
-        <div className="px-7 py-5 border-t border-slate-100 shrink-0 bg-white">
+        <div className="px-7 py-5 border-t border-slate-100 flex-shrink-0 bg-white">
           <button
             type="submit"
             form="waitlist-form"
@@ -395,9 +402,9 @@ export default function ScamreactVerificaWaitlist() {
         {/* Card principale */}
         <div className="rounded-3xl overflow-hidden border border-slate-200 bg-white shadow-sm">
           {/* Header card con sfondo leggero */}
-          <div className="px-7 pt-8 pb-7 bg-linear-to-br from-slate-50 to-white border-b border-slate-100">
+          <div className="px-7 pt-8 pb-7 bg-gradient-to-br from-slate-50 to-white border-b border-slate-100">
             <div className="flex items-start gap-5">
-              <div className="w-14 h-14 rounded-2xl bg-teal-600 flex items-center justify-center shrink-0 shadow-lg shadow-teal-100">
+              <div className="w-14 h-14 rounded-2xl bg-teal-600 flex items-center justify-center flex-shrink-0 shadow-lg shadow-teal-100">
                 <Search size={24} className="text-white" strokeWidth={2} />
               </div>
               <div className="flex-1 min-w-0">
@@ -422,7 +429,7 @@ export default function ScamreactVerificaWaitlist() {
             <ul className="space-y-3.5">
               {BENEFITS.map((b) => (
                 <li key={b.text} className="flex items-center gap-4">
-                  <span className="text-lg leading-none shrink-0">
+                  <span className="text-lg leading-none flex-shrink-0">
                     {b.icon}
                   </span>
                   <span className="text-sm text-slate-600 leading-relaxed">
@@ -510,7 +517,7 @@ export default function ScamreactVerificaWaitlist() {
             {/* Social proof */}
             <div className="flex items-center gap-4 py-5 border-t border-b border-slate-100">
               {/* Avatars */}
-              <div className="flex -space-x-2.5 shrink-0">
+              <div className="flex -space-x-2.5 flex-shrink-0">
                 {["#0f6e56", "#1d9e75", "#5dcaa5", "#9fe1cb", "#c7f2e6"].map(
                   (c, i) => (
                     <div
