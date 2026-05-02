@@ -324,7 +324,7 @@ function ContactEvidenceModal({
 
         {/* Header */}
         <div className="flex items-start gap-3 px-6 pt-5 pb-4 border-b border-slate-100">
-          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-xl flex-shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-xl shrink-0 mt-0.5">
             {icon}
           </div>
           <div className="flex-1">
@@ -435,7 +435,7 @@ function ContactEvidenceModal({
           <button
             type="button"
             onClick={handleConfirm}
-            className="flex-[2] py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all disabled:opacity-40"
+            className="flex-2 py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all disabled:opacity-40"
             disabled={!!errorMsg}
           >
             {localVal ? "Conferma →" : "Continua senza →"}
