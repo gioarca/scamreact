@@ -1,175 +1,104 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import {
   ShieldCheck,
   ArrowRight,
+  Search,
   Menu,
   X,
-  Search,
   FileWarning,
-  BookOpen,
-  Newspaper,
-  Users,
-  List,
 } from "lucide-react";
 
 // ─────────────────────────────────────────────
-// CONFIG
+// CONFIG — aggiungere/rimuovere voci qui
 // ─────────────────────────────────────────────
 
 const NAV_LINKS = [
-  {
-    id: "manifesto",
-    label: "Manifesto",
-    type: "scroll",
-    target: "manifesto",
-    icon: BookOpen,
-  },
-  {
-    id: "articoli",
-    label: "Articoli",
-    type: "scroll",
-    target: "articoli",
-    icon: Newspaper,
-  },
-  {
-    id: "chi-siamo",
-    label: "Chi siamo",
-    type: "scroll",
-    target: "storia",
-    icon: Users,
-  },
-  {
-    id: "truffe",
-    label: "Truffe",
-    type: "route",
-    target: "/scams",
-    icon: List,
-  },
+  { id: "manifesto", label: "Manifesto", type: "scroll", target: "manifesto" },
+  { id: "articoli", label: "Articoli", type: "scroll", target: "articoli" },
+  { id: "chi-siamo", label: "Chi siamo", type: "scroll", target: "storia" },
+  { id: "truffe", label: "Truffe", type: "route", target: "/scams" },
 ];
 
 // ─────────────────────────────────────────────
-// HOOK — blocca body scroll quando il menu è aperto
-// ─────────────────────────────────────────────
-
-function useLockBodyScroll(active) {
-  useEffect(() => {
-    if (!active) return;
-    const prev = document.body.style.overflow;
-    document.body.style.overflow = "hidden";
-    return () => {
-      document.body.style.overflow = prev;
-    };
-  }, [active]);
-}
-
-// ─────────────────────────────────────────────
-// COMPONENTE
+// HEADER
 // ─────────────────────────────────────────────
 
 export default function Header() {
+  const [menuOpen, setMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [mobileOpen, setMobileOpen] = useState(false);
-  const [closing, setClosing] = useState(false);
 
   const location = useLocation();
   const navigate = useNavigate();
   const isHome = location.pathname === "/";
 
-  // scroll listener
+  // ── Chiudi menu al cambio pagina
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    setMenuOpen(false);
+  }, [location.key]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Shadow barra allo scroll
   useEffect(() => {
     const fn = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", fn, { passive: true });
     return () => window.removeEventListener("scroll", fn);
   }, []);
 
-  useLockBodyScroll(mobileOpen);
+  // ── Blocca scroll body quando menu aperto
+  useEffect(() => {
+    document.body.style.overflow = menuOpen ? "hidden" : "";
+    return () => {
+      document.body.style.overflow = "";
+    };
+  }, [menuOpen]);
 
-  // chiudi il menu al cambio di pathname.
-  // Pattern "derived state during render": confronto diretto nel corpo
-  // della funzione, nessun effect, nessun warning del linter.
-  const prevPathnameRef = useRef(location.pathname);
-  // eslint-disable-next-line react-hooks/refs
-  if (prevPathnameRef.current !== location.pathname) {
-    // eslint-disable-next-line react-hooks/refs
-    prevPathnameRef.current = location.pathname;
-    if (mobileOpen) {
-      setMobileOpen(false);
-      setClosing(false);
-    }
-  }
-
-  // ── close: avvia animazione uscita, poi smonta
-  function closeMenu() {
-    setClosing(true);
-    setTimeout(() => {
-      setMobileOpen(false);
-      setClosing(false);
-    }, 260);
-  }
-
-  // ── open
-  function openMenu() {
-    setClosing(false);
-    setMobileOpen(true);
-  }
-
-  function scrollTo(id) {
-    closeMenu();
+  // ── Scroll fluido verso una sezione della homepage
+  function smoothScroll(id) {
+    setMenuOpen(false);
     setTimeout(() => {
       document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
-    }, 300);
+    }, 50);
   }
 
-  function handleNavClick(link) {
+  // ── Gestisce click su link di navigazione
+  function handleLink(link) {
     if (link.type !== "scroll") return;
-    isHome
-      ? scrollTo(link.target)
-      : (closeMenu(), navigate(`/#${link.target}`));
+    isHome ? smoothScroll(link.target) : navigate(`/#${link.target}`);
   }
 
+  // ── Porta al form di segnalazione
   function handleSegnala() {
-    isHome ? scrollTo("form") : (closeMenu(), navigate("/#form"));
+    setMenuOpen(false);
+    isHome ? smoothScroll("form") : navigate("/#form");
   }
 
-  const isActive = (target) => location.pathname === target;
-
-  // ─────────────────────────────────────────────
-  // RENDER
-  // ─────────────────────────────────────────────
+  const isActive = (path) => location.pathname === path;
 
   return (
-    <>
-      {/* ══════════════════════════════
-          HEADER BAR
-      ══════════════════════════════ */}
-      <header
-        className={`fixed top-0 left-0 right-0 z-40 transition-all duration-300 ${
+    // Il nav ha `mb-8` come nella navbar Vicus: spinge il contenuto sotto
+    <nav className="w-full mb-8">
+      <div
+        className={`fixed top-0 w-full z-50 transition-all duration-300 ${
           scrolled
-            ? "bg-white/95 backdrop-blur-xl shadow-sm border-b border-slate-100"
+            ? "bg-white/95 backdrop-blur-sm shadow-md border-b border-slate-100"
             : "bg-white/80 backdrop-blur-sm"
         }`}
       >
-        <div
-          className="max-w-5xl mx-auto flex items-center justify-between"
-          style={{ padding: "12px 16px" }}
-        >
-          {/* Logo */}
-          <Link
-            to="/"
-            onClick={() => isHome && scrollTo("top")}
-            className="flex items-center gap-2 no-underline group flex-shrink-0"
-          >
+        <div className="container mx-auto px-4 py-3 flex justify-between items-center">
+          {/* ── Logo ── */}
+          <Link to="/" className="flex items-center gap-2.5 group">
             <div className="relative flex-shrink-0">
               <ShieldCheck
                 className="text-teal-600"
                 size={26}
                 strokeWidth={2.5}
               />
+              {/* Alone luminoso dietro lo scudo */}
               <div className="absolute inset-0 bg-teal-400/20 blur-md rounded-full pointer-events-none" />
             </div>
             <div className="leading-none">
-              <div className="text-[16px] font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
+              <div className="text-[15px] font-bold text-slate-900 group-hover:text-teal-700 transition-colors">
                 ScamReact
               </div>
               <div className="text-[10px] text-slate-400 font-medium tracking-wide mt-0.5">
@@ -178,14 +107,14 @@ export default function Header() {
             </div>
           </Link>
 
-          {/* Desktop nav */}
-          <nav className="hidden md:flex items-center gap-0.5">
+          {/* ── Desktop nav ── */}
+          <div className="hidden lg:flex lg:items-center lg:gap-1">
             {NAV_LINKS.map((link) =>
               link.type === "route" ? (
                 <Link
-                  key={`route-${link.id}`}
+                  key={link.id}
                   to={link.target}
-                  className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                  className={`text-sm font-medium px-3 py-2 rounded-lg transition-colors ${
                     isActive(link.target)
                       ? "text-teal-600 bg-teal-50"
                       : "text-slate-600 hover:text-slate-900 hover:bg-slate-50"
@@ -195,190 +124,135 @@ export default function Header() {
                 </Link>
               ) : (
                 <button
-                  key={`scroll-${link.id}`}
-                  onClick={() => handleNavClick(link)}
-                  className="px-3 py-2 rounded-lg text-sm font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
+                  key={link.id}
+                  onClick={() => handleLink(link)}
+                  className="text-sm font-medium px-3 py-2 rounded-lg text-slate-600 hover:text-slate-900 hover:bg-slate-50 transition-colors"
                 >
                   {link.label}
                 </button>
               ),
             )}
-          </nav>
 
-          {/* Desktop CTAs */}
-          <div className="hidden md:flex items-center gap-2 flex-shrink-0">
+            {/* Separatore verticale — stesso pattern di Vicus */}
+            <span className="h-5 w-px bg-slate-200 mx-1" />
+
+            {/* Verifica — azione secondaria */}
             <Link
               to="/verifica"
-              className={`inline-flex items-center gap-1.5 px-3 py-2 rounded-lg text-sm font-medium border transition-colors ${
+              className={`inline-flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium rounded-lg border transition-colors ${
                 isActive("/verifica")
                   ? "border-teal-300 bg-teal-50 text-teal-700"
-                  : "border-slate-200 bg-white text-slate-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50"
+                  : "border-slate-200 text-slate-600 hover:border-teal-300 hover:text-teal-700 hover:bg-teal-50"
               }`}
             >
               <Search size={13} strokeWidth={2.5} />
               Verifica
             </Link>
+
+            {/* Segnala — azione primaria */}
             <button
               onClick={handleSegnala}
-              className="inline-flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 active:scale-95 transition-all shadow-sm shadow-teal-100"
+              className="inline-flex items-center gap-1.5 px-4 py-1.5 text-sm font-semibold rounded-lg bg-teal-600 text-white hover:bg-teal-700 transition-colors shadow-sm hover:shadow"
             >
               Segnala
               <ArrowRight size={13} strokeWidth={2.5} />
             </button>
           </div>
 
-          {/* Hamburger */}
+          {/* ── Hamburger mobile ── */}
           <button
-            onClick={mobileOpen ? closeMenu : openMenu}
-            className="md:hidden flex items-center justify-center w-9 h-9 rounded-xl text-slate-700 hover:bg-slate-100 active:bg-slate-200 transition-colors flex-shrink-0"
-            aria-label={mobileOpen ? "Chiudi menu" : "Apri menu"}
-            aria-expanded={mobileOpen}
+            onClick={() => setMenuOpen((v) => !v)}
+            className="lg:hidden rounded-full p-2 hover:bg-slate-100 transition-colors focus:outline-none focus:ring-2 focus:ring-teal-500"
+            aria-label={menuOpen ? "Chiudi menu" : "Apri menu"}
           >
-            {mobileOpen ? (
-              <X size={20} strokeWidth={2.5} />
+            {menuOpen ? (
+              <X className="h-6 w-6 text-teal-600" aria-hidden="true" />
             ) : (
-              <Menu size={20} strokeWidth={2.5} />
+              <Menu className="h-6 w-6 text-slate-700" aria-hidden="true" />
             )}
           </button>
         </div>
-      </header>
 
-      {/* ══════════════════════════
-          MOBILE MENU
-          Montato fuori da <header>
-          per z-index e fixed puliti
-      ══════════════════════════ */}
-      {mobileOpen && (
-        <>
-          {/* Overlay */}
-          <div
-            className="fixed inset-0 z-50 bg-black/40"
-            style={{
-              animation: closing
-                ? "srFadeOut 260ms ease forwards"
-                : "srFadeIn 180ms ease forwards",
-            }}
-            onClick={closeMenu}
-            aria-hidden="true"
-          />
+        {/* ── Menu mobile — scende dall'alto come Vicus ── */}
+        {menuOpen && (
+          <>
+            {/* Overlay per chiudere cliccando fuori */}
+            <div
+              className="fixed inset-0 z-40"
+              onClick={() => setMenuOpen(false)}
+              aria-hidden="true"
+            />
 
-          {/* Bottom sheet */}
-          <div
-            role="dialog"
-            aria-modal="true"
-            aria-label="Menu di navigazione"
-            className="fixed left-0 right-0 bottom-0 z-50 bg-white rounded-t-3xl shadow-2xl"
-            style={{
-              animation: closing
-                ? "srSlideDown 260ms cubic-bezier(0.4,0,1,1) forwards"
-                : "srSlideUp 300ms cubic-bezier(0.34,1.56,0.64,1) forwards",
-              paddingBottom: "max(24px, env(safe-area-inset-bottom))",
-            }}
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Handle */}
-            <div className="flex justify-center pt-3 pb-1">
-              <div className="w-10 h-1 bg-slate-200 rounded-full" />
-            </div>
+            {/* Pannello — stessa struttura di Vicus: `absolute top-full` */}
+            <div className="absolute top-full left-0 right-0 bg-white shadow-lg rounded-b-2xl z-50 lg:hidden">
+              <div className="flex flex-col p-4 gap-1">
+                {/* Link di navigazione */}
+                {NAV_LINKS.map((link) =>
+                  link.type === "route" ? (
+                    <Link
+                      key={link.id}
+                      to={link.target}
+                      className={`px-3 py-3 rounded-xl text-sm font-medium transition-colors ${
+                        isActive(link.target)
+                          ? "text-teal-600 bg-teal-50"
+                          : "text-slate-700 hover:bg-slate-50"
+                      }`}
+                    >
+                      {link.label}
+                    </Link>
+                  ) : (
+                    <button
+                      key={link.id}
+                      onClick={() => handleLink(link)}
+                      className="text-left px-3 py-3 rounded-xl text-sm font-medium text-slate-700 hover:bg-slate-50 transition-colors"
+                    >
+                      {link.label}
+                    </button>
+                  ),
+                )}
 
-            <div className="px-4 pt-2 space-y-1">
-              {/* Nav links */}
-              {NAV_LINKS.map((link) => {
-                const Icon = link.icon;
-                const keyPfx =
-                  link.type === "route" ? "mob-route" : "mob-scroll";
-                const active = link.type === "route" && isActive(link.target);
+                {/* Divisore — stesso pattern di Vicus */}
+                <div className="border-t border-slate-100 my-1 pt-1" />
 
-                return link.type === "route" ? (
-                  <Link
-                    key={`${keyPfx}-${link.id}`}
-                    to={link.target}
-                    className={`flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl text-[15px] font-medium transition-colors ${
-                      active
-                        ? "text-teal-700 bg-teal-50"
-                        : "text-slate-700 active:bg-slate-100"
-                    }`}
-                  >
-                    <Icon
-                      size={17}
-                      strokeWidth={2}
-                      className={active ? "text-teal-500" : "text-slate-400"}
-                    />
-                    {link.label}
-                  </Link>
-                ) : (
-                  <button
-                    key={`${keyPfx}-${link.id}`}
-                    onClick={() => handleNavClick(link)}
-                    className="flex items-center gap-3 w-full px-4 py-3.5 rounded-2xl text-[15px] font-medium text-slate-700 active:bg-slate-100 transition-colors"
-                  >
-                    <Icon
-                      size={17}
-                      strokeWidth={2}
-                      className="text-slate-400"
-                    />
-                    {link.label}
-                  </button>
-                );
-              })}
-
-              {/* Divider */}
-              <div
-                className="h-px bg-slate-100 mx-1"
-                style={{ margin: "10px 4px" }}
-              />
-
-              {/* CTA: Verifica */}
-              <Link
-                to="/verifica"
-                className={`flex items-center gap-3 w-full px-4 py-4 rounded-2xl text-[15px] font-medium border-2 transition-colors ${
-                  isActive("/verifica")
-                    ? "border-teal-400 bg-teal-50 text-teal-700"
-                    : "border-slate-200 text-slate-700 active:bg-slate-50"
-                }`}
-              >
-                <Search
-                  size={18}
-                  strokeWidth={2}
-                  className="text-teal-500 flex-shrink-0"
-                />
-                <div className="min-w-0">
-                  <div className="leading-tight">Verifica un contatto</div>
-                  <div className="text-xs font-normal text-slate-400 mt-0.5 truncate">
-                    Numero, email o sito già segnalato?
-                  </div>
-                </div>
-              </Link>
-
-              {/* CTA: Segnala */}
-              <button
-                onClick={handleSegnala}
-                className="flex items-center justify-between w-full px-4 py-4 rounded-2xl text-[15px] font-semibold bg-teal-600 text-white active:bg-teal-700 active:scale-[0.98] transition-all shadow-md shadow-teal-100"
-              >
-                <div className="flex items-center gap-3">
-                  <FileWarning
-                    size={18}
+                {/* CTAs mobile */}
+                <Link
+                  to="/verifica"
+                  className={`flex items-center gap-3 px-3 py-3 rounded-xl text-sm font-medium border transition-colors ${
+                    isActive("/verifica")
+                      ? "border-teal-300 bg-teal-50 text-teal-700"
+                      : "border-slate-200 text-slate-700 hover:border-teal-200 hover:bg-teal-50/50"
+                  }`}
+                >
+                  <Search
+                    size={16}
                     strokeWidth={2}
-                    className="flex-shrink-0"
+                    className="text-teal-500 flex-shrink-0"
                   />
-                  Segnala una truffa
-                </div>
-                <span className="w-7 h-7 bg-white/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <ArrowRight size={15} strokeWidth={2.5} />
-                </span>
-              </button>
-            </div>
-          </div>
-        </>
-      )}
+                  <div>
+                    <div className="font-medium leading-tight">
+                      Verifica un contatto
+                    </div>
+                    <div className="text-xs text-slate-400 mt-0.5">
+                      Numero, email o sito già segnalato?
+                    </div>
+                  </div>
+                </Link>
 
-      {/* Keyframes — prefisso "sr" per evitare collisioni globali */}
-      <style>{`
-        @keyframes srFadeIn    { from { opacity: 0 }                  to { opacity: 1 } }
-        @keyframes srFadeOut   { from { opacity: 1 }                  to { opacity: 0 } }
-        @keyframes srSlideUp   { from { transform: translateY(110%) } to { transform: translateY(0) } }
-        @keyframes srSlideDown { from { transform: translateY(0) }    to { transform: translateY(110%) } }
-      `}</style>
-    </>
+                <button
+                  onClick={handleSegnala}
+                  className="flex items-center justify-between w-full px-3 py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <FileWarning size={16} strokeWidth={2} />
+                    Segnala una truffa
+                  </div>
+                  <ArrowRight size={15} strokeWidth={2.5} />
+                </button>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </nav>
   );
 }

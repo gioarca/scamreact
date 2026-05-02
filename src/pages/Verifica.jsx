@@ -228,7 +228,7 @@ export default function VerifyPage() {
               rel="noopener noreferrer"
               className="flex items-center gap-3 p-3 rounded-xl border border-slate-100 hover:border-teal-200 hover:bg-teal-50/40 transition-all group"
             >
-              <span className="text-xl flex-shrink-0">{r.icon}</span>
+              <span className="text-xl shrink-0">{r.icon}</span>
               <div className="flex-1 min-w-0">
                 <span className="block text-xs font-semibold text-slate-800 group-hover:text-teal-700 transition-colors">
                   {r.name}
@@ -238,7 +238,7 @@ export default function VerifyPage() {
                 </span>
               </div>
               <svg
-                className="w-4 h-4 text-slate-300 group-hover:text-teal-400 flex-shrink-0 transition-colors"
+                className="w-4 h-4 text-slate-300 group-hover:text-teal-400 shrink-0 transition-colors"
                 fill="none"
                 viewBox="0 0 24 24"
                 stroke="currentColor"
