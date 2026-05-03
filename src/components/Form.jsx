@@ -102,6 +102,14 @@ const SCAM_TYPES = [
       "Richiesta di anticipo per lavori domestici che non vengono mai completati.",
   },
   {
+    id: "card_cloning_scam",
+    label: "Clonazione carta",
+    icon: "💳",
+    example: "Addebiti non autorizzati",
+    description:
+      "Clonazione del bancomat o della carta di credito tramite skimmer, phishing o intercettazione dei dati.",
+  },
+  {
     id: "other",
     label: "Altro",
     icon: "❓",
@@ -115,10 +123,10 @@ const CHANNELS = [
   { id: "whatsapp", label: "WhatsApp", icon: "💬", type: "phone" },
   { id: "sms", label: "SMS", icon: "📱", type: "phone" },
   { id: "telegram", label: "Telegram", icon: "✈️", type: "phone" },
-  { id: "email", label: "Email", icon: "📧", type: "none" },
+  { id: "email", label: "Email", icon: "📧", type: "email" },
   { id: "phone_call", label: "Chiamata", icon: "📞", type: "phone" },
-  { id: "instagram", label: "Instagram", icon: "📷", type: "none" },
-  { id: "facebook", label: "Facebook", icon: "👥", type: "none" },
+  { id: "instagram", label: "Instagram", icon: "📷", type: "social" },
+  { id: "facebook", label: "Facebook", icon: "👥", type: "social" },
   { id: "website", label: "Sito web", icon: "🌐", type: "website" },
   { id: "other", label: "Altro", icon: "❓", type: "none" },
 ];
@@ -230,6 +238,27 @@ function validateWebsite(value) {
   }
 }
 
+// Email validation
+function validateEmail(value) {
+  return /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(value.trim());
+}
+
+// Social profile validation — accetta @username, username, o URL profilo
+function validateSocial(value) {
+  const v = value.trim().replace(/^@/, "");
+  if (v.length < 1) return false;
+  // URL profilo (instagram.com/..., facebook.com/...)
+  if (value.startsWith("http")) {
+    try {
+      return Boolean(new URL(value).hostname);
+    } catch {
+      return false;
+    }
+  }
+  // Username: almeno 1 carattere, niente spazi
+  return /^[^\s]{1,60}$/.test(v);
+}
+
 function normalizeWebsite(value) {
   if (!value) return value;
   const trimmed = value.trim();
@@ -252,6 +281,8 @@ function ContactEvidenceModal({
 }) {
   const isPhone = channel?.type === "phone";
   const isWebsite = channel?.type === "website";
+  const isEmail = channel?.type === "email";
+  const isSocial = channel?.type === "social";
   const inputRef = useRef(null);
   const [localVal, setLocalVal] = useState(value || "");
   const [touched, setTouched] = useState(false);
@@ -264,13 +295,21 @@ function ContactEvidenceModal({
     ? validatePhone(localVal)
     : isWebsite
       ? validateWebsite(localVal)
-      : true;
+      : isEmail
+        ? validateEmail(localVal)
+        : isSocial
+          ? validateSocial(localVal)
+          : true;
 
   const errorMsg =
     touched && localVal && !isValid
       ? isPhone
         ? "Formato non valido. Esempio: +39 345 123 4567"
-        : "Inserisci un URL valido. Esempio: www.sito-truffa.it"
+        : isEmail
+          ? "Inserisci un indirizzo email valido. Esempio: noreply@fake-bank.it"
+          : isSocial
+            ? "Inserisci un username valido. Esempio: @profilo_sospetto"
+            : "Inserisci un URL valido. Esempio: www.sito-truffa.it"
       : null;
 
   function handleConfirm() {
@@ -292,17 +331,35 @@ function ContactEvidenceModal({
     if (e.key === "Escape") onClose();
   }
 
-  const icon = isPhone ? "📱" : "🌐";
+  const icon = isPhone ? "📱" : isEmail ? "📧" : isSocial ? channel.icon : "🌐";
   const title = isPhone
     ? `Numero usato da ${channel.label}`
-    : "Sito web della truffa";
+    : isEmail
+      ? "Email del mittente sospetto"
+      : isSocial
+        ? `Profilo ${channel.label} sospetto`
+        : "Sito web della truffa";
   const subtitle = isPhone
     ? "Inserisci il numero di telefono da cui hai ricevuto il contatto."
-    : "Inserisci l'URL del sito truffaldino che hai visitato.";
-  const placeholder = isPhone ? "+39 345 123 4567" : "www.sito-truffa.it";
+    : isEmail
+      ? "Inserisci l'indirizzo email da cui hai ricevuto il messaggio sospetto."
+      : isSocial
+        ? `Inserisci il profilo ${channel.label} che ti ha contattato (username o URL).`
+        : "Inserisci l'URL del sito truffaldino che hai visitato.";
+  const placeholder = isPhone
+    ? "+39 345 123 4567"
+    : isEmail
+      ? "noreply@fake-bank.it"
+      : isSocial
+        ? `@profilo_sospetto`
+        : "www.sito-truffa.it";
   const hint = isPhone
     ? "Formato accettato: +39, 0039, o solo il numero (es. 3451234567)"
-    : "Accettato con o senza https:// — es. www.crypto-fakebroker.com";
+    : isEmail
+      ? "Inserisci l'indirizzo completo — es. supporto@unicredit-sicurezza.com"
+      : isSocial
+        ? `Accettato con @ (es. @truffatore99) o come URL completo del profilo`
+        : "Accettato con o senza https:// — es. www.crypto-fakebroker.com";
 
   return (
     <div
@@ -324,7 +381,7 @@ function ContactEvidenceModal({
 
         {/* Header */}
         <div className="flex items-start gap-3 px-6 pt-5 pb-4 border-b border-slate-100">
-          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-xl shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-xl flex-shrink-0 mt-0.5">
             {icon}
           </div>
           <div className="flex-1">
@@ -351,14 +408,23 @@ function ContactEvidenceModal({
             <span className="text-sm mt-0.5">⚠️</span>
             <p className="text-xs text-amber-800">
               Questo dato è <strong>pubblico nella segnalazione</strong> e aiuta
-              altri utenti a identificare la truffa. Non inserire il tuo numero.
+              altri utenti a identificare la truffa.
+              {isPhone && " Non inserire il tuo numero."}
+              {isEmail && " Non inserire la tua email."}
+              {isSocial && " Non inserire il tuo profilo."}
             </p>
           </div>
 
           {/* Input */}
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1.5">
-              {isPhone ? "Numero di telefono" : "URL del sito"}
+              {isPhone
+                ? "Numero di telefono"
+                : isEmail
+                  ? "Indirizzo email mittente"
+                  : isSocial
+                    ? `Profilo ${channel.label}`
+                    : "URL del sito"}
               <span className="text-slate-400 font-normal ml-1">
                 (facoltativo)
               </span>
@@ -366,7 +432,7 @@ function ContactEvidenceModal({
             <div className="relative">
               <input
                 ref={inputRef}
-                type={isPhone ? "tel" : "url"}
+                type={isPhone ? "tel" : isEmail ? "email" : "text"}
                 value={localVal}
                 onChange={(e) => {
                   setLocalVal(e.target.value);
@@ -374,7 +440,7 @@ function ContactEvidenceModal({
                 }}
                 onKeyDown={handleKey}
                 placeholder={placeholder}
-                inputMode={isPhone ? "tel" : "url"}
+                inputMode={isPhone ? "tel" : isEmail ? "email" : "url"}
                 className={`w-full px-4 py-3 text-sm font-mono border-2 rounded-xl focus:outline-none transition-colors ${
                   errorMsg
                     ? "border-red-300 bg-red-50 text-red-900 focus:border-red-400"
@@ -399,13 +465,59 @@ function ContactEvidenceModal({
             )}
           </div>
 
-          {/* Example chips */}
+          {/* Example chips — website */}
           {isWebsite && (
             <div className="flex flex-wrap gap-1.5">
               {[
                 "www.unicredit-sicurezza.com",
                 "cryptobonus-italia.net",
                 "offerta-lavoro-da-casa.it",
+              ].map((ex) => (
+                <button
+                  key={ex}
+                  type="button"
+                  onClick={() => {
+                    setLocalVal(ex);
+                    setTouched(true);
+                  }}
+                  className="px-2 py-1 rounded-lg text-[10px] font-mono bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200"
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Example chips — email */}
+          {isEmail && (
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                "noreply@unicredit-alert.it",
+                "supporto@paypal-sicurezza.com",
+                "info@rimborso-inps.net",
+              ].map((ex) => (
+                <button
+                  key={ex}
+                  type="button"
+                  onClick={() => {
+                    setLocalVal(ex);
+                    setTouched(true);
+                  }}
+                  className="px-2 py-1 rounded-lg text-[10px] font-mono bg-slate-100 text-slate-600 hover:bg-slate-200 transition-colors border border-slate-200"
+                >
+                  {ex}
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* Example chips — social */}
+          {isSocial && (
+            <div className="flex flex-wrap gap-1.5">
+              {[
+                "@investimenti_facili",
+                "@guadagna_da_casa99",
+                "@offerta_lavoro_ufficiale",
               ].map((ex) => (
                 <button
                   key={ex}
@@ -435,7 +547,7 @@ function ContactEvidenceModal({
           <button
             type="button"
             onClick={handleConfirm}
-            className="flex-2 py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all disabled:opacity-40"
+            className="flex-[2] py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all disabled:opacity-40"
             disabled={!!errorMsg}
           >
             {localVal ? "Conferma →" : "Continua senza →"}
@@ -560,7 +672,7 @@ function StepMessage({ value, onChange, redacted, onNext }) {
         <span className="text-lg mt-0.5">🔒</span>
         <div className="text-xs text-teal-800">
           <span className="font-semibold block">Cosa NON serve</span>
-          Nome · Email · Telefono · Documenti
+          Nome · Email · Telefono · Documenti — rimoviamo tutto automaticamente
         </div>
       </div>
 
@@ -588,10 +700,8 @@ function StepMessage({ value, onChange, redacted, onNext }) {
           <span className="text-xs text-slate-400">
             {value.length} / {MIN_MSG_LEN} caratteri minimi
           </span>
-          <p className="font-semibold text-black block items-center justify-between text-xs mt-4">
+          <p className="block items-center justify-between text-xs text-black font-semibold mt-4">
             Linee guida per la segnalazione
-          </p>
-          <p className="block items-center justify-between text-xs text-slate-800 font-light">
             <br /> ScamReact raccoglie segnalazioni degli utenti per
             identificare possibili schemi di truffa online e offline.
             <br />
@@ -648,11 +758,15 @@ function StepClassify({
 
   function handleChannelClick(c) {
     setChannel(c.id);
-    if (c.type === "phone" || c.type === "website") {
+    if (
+      c.type === "phone" ||
+      c.type === "website" ||
+      c.type === "email" ||
+      c.type === "social"
+    ) {
       setPendingChannel(c);
       setShowModal(true);
     } else {
-      // Reset evidence if switching to a no-evidence channel
       setContactEvidence("");
     }
   }
@@ -731,10 +845,18 @@ function StepClassify({
           {contactEvidence &&
             selectedChannel &&
             (selectedChannel.type === "phone" ||
-              selectedChannel.type === "website") && (
+              selectedChannel.type === "website" ||
+              selectedChannel.type === "email" ||
+              selectedChannel.type === "social") && (
               <div className="mt-3 flex items-center gap-2 p-2.5 bg-teal-50 border border-teal-200 rounded-xl">
                 <span className="text-sm">
-                  {selectedChannel.type === "phone" ? "📱" : "🌐"}
+                  {selectedChannel.type === "phone"
+                    ? "📱"
+                    : selectedChannel.type === "email"
+                      ? "📧"
+                      : selectedChannel.type === "social"
+                        ? selectedChannel.icon
+                        : "🌐"}
                 </span>
                 <span className="text-xs font-mono text-teal-800 flex-1 truncate">
                   {contactEvidence}
@@ -767,11 +889,13 @@ function StepClassify({
               </div>
             )}
 
-          {/* Prompt to add evidence for phone/website channels when not set yet */}
+          {/* Prompt to add evidence */}
           {!contactEvidence &&
             selectedChannel &&
             (selectedChannel.type === "phone" ||
-              selectedChannel.type === "website") && (
+              selectedChannel.type === "website" ||
+              selectedChannel.type === "email" ||
+              selectedChannel.type === "social") && (
               <button
                 type="button"
                 onClick={() => {
@@ -780,11 +904,23 @@ function StepClassify({
                 }}
                 className="mt-3 w-full flex items-center gap-2 p-2.5 border-2 border-dashed border-teal-300 rounded-xl text-xs text-teal-600 font-semibold hover:bg-teal-50 transition-all"
               >
-                <span>{selectedChannel.type === "phone" ? "📱" : "🌐"}</span>
+                <span>
+                  {selectedChannel.type === "phone"
+                    ? "📱"
+                    : selectedChannel.type === "email"
+                      ? "📧"
+                      : selectedChannel.type === "social"
+                        ? selectedChannel.icon
+                        : "🌐"}
+                </span>
                 <span>
                   {selectedChannel.type === "phone"
                     ? `Aggiungi il numero usato da ${selectedChannel.label} →`
-                    : "Aggiungi l'URL del sito truffaldino →"}
+                    : selectedChannel.type === "email"
+                      ? "Aggiungi l'indirizzo email del mittente sospetto →"
+                      : selectedChannel.type === "social"
+                        ? `Aggiungi il profilo ${selectedChannel.label} sospetto →`
+                        : "Aggiungi l'URL del sito truffaldino →"}
                 </span>
               </button>
             )}
@@ -815,14 +951,125 @@ function StepOptional({
   setLocation,
   amountRange,
   setAmountRange,
+  priorSearch,
+  setPriorSearch,
   onBack,
   onNext,
 }) {
+  const PRIOR_SEARCH_OPTIONS = [
+    {
+      id: "found",
+      label: "Sì, e ho trovato altre segnalazioni",
+      icon: "🔴",
+      sublabel: "Il contatto era già noto come truffaldino",
+    },
+    {
+      id: "not_found",
+      label: "Sì, ma non ho trovato niente",
+      icon: "🔍",
+      sublabel: "Ho cercato ma non c'era nulla online",
+    },
+    {
+      id: "no_search",
+      label: "No, non ho cercato",
+      icon: "➡️",
+      sublabel: "Non sapevo dove o come cercare",
+    },
+  ];
+
   return (
     <div className="space-y-6">
       <p className="text-xs text-slate-500 bg-slate-50 border border-slate-200 rounded-xl p-3">
         Tutti i campi sono facoltativi. Ci aiutano a capire meglio il fenomeno.
       </p>
+
+      {/* Micro-survey: ricerca preventiva */}
+      <div>
+        <h4 className="text-sm font-semibold text-slate-800 mb-1">
+          Prima di segnalare, hai cercato online questo contatto?
+        </h4>
+        <p className="text-xs text-slate-400 mb-3">
+          Es. il numero di telefono, l'email o il sito su Google o altri motori
+        </p>
+        <div className="space-y-2">
+          {PRIOR_SEARCH_OPTIONS.map((opt) => (
+            <button
+              key={opt.id}
+              type="button"
+              onClick={() =>
+                setPriorSearch(priorSearch === opt.id ? null : opt.id)
+              }
+              className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl border-2 text-left transition-all duration-150 ${
+                priorSearch === opt.id
+                  ? "border-teal-500 bg-teal-50"
+                  : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
+              }`}
+            >
+              <span className="text-lg leading-none flex-shrink-0">
+                {opt.icon}
+              </span>
+              <div className="flex-1 min-w-0">
+                <span
+                  className={`block text-xs font-semibold leading-tight ${priorSearch === opt.id ? "text-teal-800" : "text-slate-700"}`}
+                >
+                  {opt.label}
+                </span>
+                <span className="block text-[11px] text-slate-400 mt-0.5 leading-tight">
+                  {opt.sublabel}
+                </span>
+              </div>
+              <span
+                className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
+                  priorSearch === opt.id
+                    ? "border-teal-500 bg-teal-500"
+                    : "border-slate-300 bg-white"
+                }`}
+              >
+                {priorSearch === opt.id && (
+                  <svg
+                    viewBox="0 0 16 16"
+                    fill="white"
+                    className="w-full h-full p-0.5"
+                  >
+                    <path d="M13.78 4.22a.75.75 0 0 1 0 1.06l-7.25 7.25a.75.75 0 0 1-1.06 0L2.22 9.28a.75.75 0 0 1 1.06-1.06L6 10.94l6.72-6.72a.75.75 0 0 1 1.06 0Z" />
+                  </svg>
+                )}
+              </span>
+            </button>
+          ))}
+        </div>
+
+        {/* Insight contestuale */}
+        {priorSearch === "not_found" && (
+          <div className="mt-3 flex items-start gap-2 p-3 bg-amber-50 border border-amber-200 rounded-xl">
+            <span className="text-base mt-0.5">💡</span>
+            <p className="text-xs text-amber-800">
+              La tua segnalazione potrebbe essere la <strong>prima</strong> su
+              questo contatto. Aiuterà altri utenti a non cadere nella stessa
+              truffa.
+            </p>
+          </div>
+        )}
+        {priorSearch === "found" && (
+          <div className="mt-3 flex items-start gap-2 p-3 bg-blue-50 border border-blue-200 rounded-xl">
+            <span className="text-base mt-0.5">📊</span>
+            <p className="text-xs text-blue-800">
+              Perfetto. La tua segnalazione si aggiungerà a quelle esistenti e{" "}
+              <strong>rafforzerà il segnale</strong> per questo contatto.
+            </p>
+          </div>
+        )}
+        {priorSearch === "no_search" && (
+          <div className="mt-3 flex items-start gap-2 p-3 bg-slate-50 border border-slate-200 rounded-xl">
+            <span className="text-base mt-0.5">🔎</span>
+            <p className="text-xs text-slate-600">
+              In futuro potrai usare ScamReact per verificare un contatto{" "}
+              <strong>prima</strong> di rispondere — stiamo costruendo questa
+              funzione.
+            </p>
+          </div>
+        )}
+      </div>
 
       {/* Età */}
       <div>
@@ -1000,6 +1247,7 @@ const DEFAULT_FORM = {
   age: "",
   location: "",
   amountRange: "na",
+  priorSearch: null, // "found" | "not_found" | "no_search"
   consent: true,
 };
 
@@ -1025,6 +1273,7 @@ function ReportWizard({ onSuccess }) {
           channel: form.channel,
           contactEvidence: form.contactEvidence || undefined,
           amountRange: form.amountRange,
+          priorSearch: form.priorSearch || undefined,
           consentPublic: form.consent,
           ...(form.age && { age: Number(form.age) }),
           ...(form.location && { location: form.location }),
@@ -1080,7 +1329,7 @@ function ReportWizard({ onSuccess }) {
             channel={form.channel}
             setChannel={(ch) => {
               set("channel")(ch);
-              // Reset evidence when channel changes to a non-phone/website type
+              // Reset evidence solo se il nuovo canale non raccoglie prove
               const newCh = CHANNELS.find((c) => c.id === ch);
               if (!newCh || newCh.type === "none") set("contactEvidence")("");
             }}
@@ -1098,6 +1347,8 @@ function ReportWizard({ onSuccess }) {
             setLocation={set("location")}
             amountRange={form.amountRange}
             setAmountRange={set("amountRange")}
+            priorSearch={form.priorSearch}
+            setPriorSearch={set("priorSearch")}
             onBack={() => setStep(2)}
             onNext={() => setStep(4)}
           />
