@@ -702,8 +702,10 @@ function StepMessage({ value, onChange, redacted, onNext }) {
           </span>
           <p className="block items-center justify-between text-xs text-black font-semibold mt-4">
             Linee guida per la segnalazione
-            <br /> ScamReact raccoglie segnalazioni degli utenti per
-            identificare possibili schemi di truffa online e offline.
+          </p>
+          <p className="block items-center justify-between text-xs text-black font-light mt-4">
+            ScamReact raccoglie segnalazioni degli utenti per identificare
+            possibili schemi di truffa online e offline.
             <br />
             Quando invii una segnalazione: descrivi i fatti nel modo più chiaro
             e neutrale possibile inserisci solo informazioni rilevanti per la
