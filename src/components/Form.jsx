@@ -136,7 +136,9 @@ const AMOUNT_RANGES = [
   { id: "lt_50", label: "< 50 €" },
   { id: "50_200", label: "50–200 €" },
   { id: "200_1000", label: "200–1.000 €" },
-  { id: "gt_1000", label: "> 1.000 €" },
+  { id: "1000_5000", label: "1.000-5.000 €" },
+  { id: "5000_10000", label: "5.000-10.000 €" },
+  { id: "gt_10000", label: "> 10.000 €" },
 ];
 
 const REGIONS = [
@@ -381,7 +383,7 @@ function ContactEvidenceModal({
 
         {/* Header */}
         <div className="flex items-start gap-3 px-6 pt-5 pb-4 border-b border-slate-100">
-          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-xl flex-shrink-0 mt-0.5">
+          <div className="w-10 h-10 rounded-2xl bg-teal-50 border border-teal-200 flex items-center justify-center text-xl shrink-0 mt-0.5">
             {icon}
           </div>
           <div className="flex-1">
@@ -547,7 +549,7 @@ function ContactEvidenceModal({
           <button
             type="button"
             onClick={handleConfirm}
-            className="flex-[2] py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all disabled:opacity-40"
+            className="flex-2 py-3 rounded-xl text-sm font-semibold bg-teal-600 text-white hover:bg-teal-700 transition-all disabled:opacity-40"
             disabled={!!errorMsg}
           >
             {localVal ? "Conferma →" : "Continua senza →"}
@@ -672,7 +674,7 @@ function StepMessage({ value, onChange, redacted, onNext }) {
         <span className="text-lg mt-0.5">🔒</span>
         <div className="text-xs text-teal-800">
           <span className="font-semibold block">Cosa NON serve</span>
-          Nome · Email · Telefono · Documenti — rimoviamo tutto automaticamente
+          Nome · Email · Telefono · Documenti
         </div>
       </div>
 
@@ -1007,9 +1009,7 @@ function StepOptional({
                   : "border-slate-200 bg-white hover:border-slate-300 hover:bg-slate-50"
               }`}
             >
-              <span className="text-lg leading-none flex-shrink-0">
-                {opt.icon}
-              </span>
+              <span className="text-lg leading-none shrink-0">{opt.icon}</span>
               <div className="flex-1 min-w-0">
                 <span
                   className={`block text-xs font-semibold leading-tight ${priorSearch === opt.id ? "text-teal-800" : "text-slate-700"}`}
@@ -1021,7 +1021,7 @@ function StepOptional({
                 </span>
               </div>
               <span
-                className={`w-4 h-4 rounded-full border-2 flex-shrink-0 transition-all ${
+                className={`w-4 h-4 rounded-full border-2 shrink-0 transition-all ${
                   priorSearch === opt.id
                     ? "border-teal-500 bg-teal-500"
                     : "border-slate-300 bg-white"

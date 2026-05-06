@@ -8,6 +8,10 @@ import {
   TrendingUp,
   Lock,
   CheckCircle,
+  FileCheck,
+  GitMerge,
+  Globe,
+  Building2,
 } from "lucide-react";
 import Badge from "../components/UI/Badge.jsx";
 import Button from "../components/UI/Button.jsx";
@@ -97,15 +101,15 @@ const founders = [
     accentBg: "#dbeafe",
     accentText: "#1d4ed8",
     patternColor: "#93c5fd",
-    tag: "Reverse engineering",
+    tag: "Clonazione di carta di credito",
     story: (
       <>
         Un giorno, durante un acquisto{" "}
-        <strong>mi hanno clonato una carta di credito</strong>. Ho realizzato
-        che le truffe non sono improvvisate: sono{" "}
-        <strong>prodotti ingegnerizzati</strong>. Da allora ho iniziato ad
-        ascoltare le storie di persone che avessero subito degli scam e a
-        capirne di più.
+        <strong>mi hanno clonato una carta di credito</strong>. Da allora ho
+        iniziato ad ascoltare le storie di persone che avessero subito degli
+        scam e a capirne di più. Per questo ho pensato di mettere le mie
+        competenze al servizio di una <strong>piattaforma</strong> che potesse
+        aiutare a smascherare queste truffe, prima che facciano danni.
       </>
     ),
   },
@@ -866,6 +870,183 @@ function ChiSiamo() {
 }
 
 // ============================================================
+// SECTION: COSA SUCCEDE DOPO
+// Da inserire in HomePage.jsx subito dopo <Form /> nel return
+// e aggiungere <CosaSuccedeDopo /> nel componente HomePage
+// ============================================================
+
+// Aggiungi queste icone all'import esistente di lucide-react:
+// FileCheck, GitMerge, Globe, Building2
+
+// Steps della timeline — modifica i testi se necessario
+const steps = [
+  {
+    icon: <FileCheck size={22} className="text-teal-600" />,
+    title: "La tua segnalazione viene ricevuta",
+    description:
+      "Non appena invii il modulo, la segnalazione entra nel nostro sistema in modo completamente anonimo. Nessun dato personale viene associato alla tua storia.",
+    accent: "#ccfbf1",
+    border: "#99f6e4",
+  },
+  {
+    icon: <GitMerge size={22} className="text-blue-600" />,
+    title: "Viene analizzata e aggregata",
+    description:
+      "Il nostro sistema incrocia la tua segnalazione con quelle già presenti per identificare pattern ricorrenti. Più segnalazioni simili arrivano, più il pattern diventa visibile e tracciabile.",
+    accent: "#dbeafe",
+    border: "#bfdbfe",
+  },
+  {
+    icon: <Globe size={22} className="text-indigo-600" />,
+    title: "Diventa protezione per tutti",
+    description:
+      "Una volta elaborata, la tua esperienza entra nel database pubblico di ScamReact. Chi visita la piattaforma potrà riconoscere lo stesso schema prima di caderne vittima.",
+    accent: "#ede9fe",
+    border: "#c4b5fd",
+  },
+  {
+    icon: <Building2 size={22} className="text-slate-600" />,
+    title: "Considera anche una denuncia formale",
+    description: (
+      <>
+        ScamReact non sostituisce le autorità. Se hai subito un danno concreto,
+        ti incoraggiamo a segnalare anche alla{" "}
+        <a
+          href="https://www.commissariatodips.it/segnalazioni/index.html"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-teal-700 hover:text-teal-900 transition-colors"
+        >
+          Polizia Postale
+        </a>{" "}
+        e all'{" "}
+        <a
+          href="https://www.agcm.it/segnalazioni"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="underline text-teal-700 hover:text-teal-900 transition-colors"
+        >
+          AGCM
+        </a>
+        . Una denuncia formale è l'unico strumento che può portare a indagini e,
+        in alcuni casi, al recupero di quanto perso.
+      </>
+    ),
+    accent: "#f8fafc",
+    border: "#e2e8f0",
+  },
+];
+
+function CosaSuccedeDopo() {
+  const [ref, visible] = useFadeIn(0.1); // usa il hook già definito in HomePage.jsx
+
+  return (
+    <section
+      id="cosa-succede-dopo"
+      className="py-24 bg-white border-t border-slate-100"
+    >
+      <div
+        ref={ref}
+        className="max-w-3xl mx-auto px-4 sm:px-6"
+        style={{
+          opacity: visible ? 1 : 0,
+          transform: visible ? "translateY(0)" : "translateY(24px)",
+          transition: "opacity 0.6s ease, transform 0.6s ease",
+        }}
+      >
+        {/* Header */}
+        <div className="mb-12">
+          <div className="inline-flex items-center gap-2 mb-6 px-4 py-2 rounded-full bg-teal-50 border border-teal-200">
+            <div className="w-2 h-2 bg-teal-500 rounded-full" />
+            <Shield size={14} className="text-teal-600" />
+            <span className="text-sm font-medium text-teal-700">
+              Dopo la segnalazione
+            </span>
+          </div>
+
+          <h2 className="text-3xl sm:text-4xl font-bold text-slate-900 mb-3 leading-tight">
+            Cosa succede dopo
+            <br />
+            <span className="text-teal-600">che hai segnalato?</span>
+          </h2>
+          <p className="text-lg text-slate-600 leading-relaxed max-w-xl">
+            La tua segnalazione non sparisce nel vuoto. Ecco il percorso che
+            compie dal momento in cui la invii.
+          </p>
+        </div>
+
+        {/* Timeline */}
+        <div className="relative">
+          {/* Linea verticale connettiva — visibile solo da md in su */}
+          <div
+            className="absolute left-[27px] top-10 bottom-10 w-px hidden sm:block"
+            style={{
+              background:
+                "linear-gradient(to bottom, #99f6e4, #bfdbfe, #c4b5fd, #e2e8f0)",
+            }}
+            aria-hidden="true"
+          />
+
+          <div className="flex flex-col gap-8">
+            {steps.map((step, i) => (
+              <div
+                key={i}
+                className="relative flex gap-5 sm:gap-7"
+                style={{
+                  // Animazione scalare con delay progressivo per ogni step
+                  opacity: visible ? 1 : 0,
+                  transform: visible ? "translateY(0)" : "translateY(20px)",
+                  transition: `opacity 0.5s ease ${i * 120 + 200}ms, transform 0.5s ease ${i * 120 + 200}ms`,
+                }}
+              >
+                {/* Icona / nodo della timeline */}
+                <div
+                  className="flex-shrink-0 w-14 h-14 rounded-2xl flex items-center justify-center z-10"
+                  style={{
+                    background: step.accent,
+                    border: `1.5px solid ${step.border}`,
+                  }}
+                >
+                  {step.icon}
+                </div>
+
+                {/* Contenuto */}
+                <div className="flex-1 pb-2" style={{ paddingTop: "12px" }}>
+                  {/* Numero step */}
+                  <span className="text-xs font-semibold tracking-widest text-slate-400 uppercase mb-1 block">
+                    Step {i + 1}
+                  </span>
+                  <h3 className="text-lg font-bold text-slate-900 mb-2 leading-snug">
+                    {step.title}
+                  </h3>
+                  <p className="text-slate-600 text-base leading-relaxed">
+                    {step.description}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Nota finale */}
+        <div className="mt-12 p-5 rounded-2xl bg-teal-50 border border-teal-100 flex items-start gap-4">
+          <CheckCircle
+            size={20}
+            className="text-teal-600 flex-shrink-0 mt-0.5"
+          />
+          <p className="text-sm text-teal-800 leading-relaxed">
+            <strong>Ogni segnalazione conta.</strong> Anche se la tua truffa ti
+            sembra "piccola" o già nota, aggiungerla significa rafforzare il
+            segnale per quella categoria — e magari proteggere la prossima
+            persona che stava per cadere nello stesso tranello.
+          </p>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+// ============================================================
 // PAGE
 // ============================================================
 
@@ -896,6 +1077,7 @@ export default function HomePage() {
       <Articles />
       <ChiSiamo />
       <Form />
+      <CosaSuccedeDopo />
     </div>
   );
 }

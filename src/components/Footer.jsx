@@ -1,5 +1,5 @@
 import React from "react";
-import { Shield, ExternalLink, Github } from "lucide-react";
+import { Shield, ExternalLink, GitGraph } from "lucide-react";
 
 function Footer() {
   const socials = [
@@ -29,10 +29,14 @@ function Footer() {
     {
       title: "Piattaforma",
       links: [
-        { label: "Le truffe", href: "#verifica" },
-        { label: "Articoli", href: "#articoli" },
-        { label: "Chi siamo", href: "#storia" },
-        { label: "Segnala una truffa", href: "#form", highlight: true },
+        { label: "Le truffe", href: "/scams" },
+        { label: "Articoli", href: "/#articoli" },
+        { label: "Chi siamo", href: "/#storia" },
+        {
+          label: "Segnala una truffa",
+          href: "/#form",
+          highlight: true,
+        },
       ],
     },
     {
@@ -179,7 +183,7 @@ function Footer() {
             Tutti i diritti riservati.
           </p>
           <div className="flex items-center gap-1.5 text-[11px] text-slate-400">
-            <Github size={12} className="text-slate-300" />
+            <GitGraph size={12} className="text-slate-300" />
             <span>Open source · MIT License</span>
           </div>
         </div>
